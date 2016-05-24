@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.UserInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.UserInfo" >
+    <constructor >
+      <idArg column="uid" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="userName" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="userRealName" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="passwd" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="phoneNumber" jdbcType="CHAR" javaType="java.lang.String" />
+      <arg column="email" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="shopOwner" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="registerTime" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="birthDay" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="headImageUrl" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="userIdCard" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="userType" jdbcType="TINYINT" javaType="java.lang.Byte" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    uid, userName, userRealName, passwd, phoneNumber, email, shopOwner, registerTime, 
+    birthDay, headImageUrl, userIdCard, userType
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+  select
+  <include refid="Base_Column_List" />
+  from wj_user_info
+  where uid = #{uid,jdbcType=BIGINT}
+</select>
+
+  <select id="checkIfPhoneNumberExist"  resultType="java.lang.Integer" parameterType="java.lang.String" >
+    select
+    count(1)
+    from wj_user_info
+    where phoneNumber = #{phoneNumber}
+  </select>
+
+  <select id="checkIfUserExist"  resultType="java.lang.Integer">
+    select
+    count(1)
+    from wj_user_info
+    where
+
+    <choose>
+      <when test="type == 0">
+         phoneNumber = #{phoneNumber}
+      </when>
+
+      <otherwise>
+          email = #{email}
+      </otherwise>
+    </choose>
+  </select>
+
+  <select id="userLogin"  resultType="java.lang.Integer">
+    select
+    count(1)
+    from wj_user_info
+    where
+        passwd = #{passwd}
+    <choose>
+      <when test="type == 0">
+        phoneNumber = #{phoneNumber}
+      </when>
+      <otherwise>
+        email = #{email}
+      </otherwise>
+    </choose>
+  </select>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from wj_user_info
+    where uid = #{uid,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.UserInfo" >
+    <selectKey resultType="java.lang.Long" keyProperty="uid" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into wj_user_info (userName, userRealName, passwd, 
+      phoneNumber, email, shopOwner, 
+      registerTime, birthDay, headImageUrl, 
+      userIdCard, userType)
+    values (#{username,jdbcType=VARCHAR}, #{userrealname,jdbcType=VARCHAR}, #{passwd,jdbcType=VARCHAR}, 
+      #{phonenumber,jdbcType=CHAR}, #{email,jdbcType=VARCHAR}, #{shopowner,jdbcType=TINYINT}, 
+      #{registertime,jdbcType=TIMESTAMP}, #{birthday,jdbcType=TIMESTAMP}, #{headimageurl,jdbcType=VARCHAR}, 
+      #{useridcard,jdbcType=VARCHAR}, #{usertype,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.UserInfo" >
+    <selectKey resultType="java.lang.Long" keyProperty="uid" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into wj_user_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="username != null" >
+        userName,
+      </if>
+      <if test="userrealname != null" >
+        userRealName,
+      </if>
+      <if test="passwd != null" >
+        passwd,
+      </if>
+      <if test="phonenumber != null" >
+        phoneNumber,
+      </if>
+      <if test="email != null" >
+        email,
+      </if>
+      <if test="shopowner != null" >
+        shopOwner,
+      </if>
+      <if test="registertime != null" >
+        registerTime,
+      </if>
+      <if test="birthday != null" >
+        birthDay,
+      </if>
+      <if test="headimageurl != null" >
+        headImageUrl,
+      </if>
+      <if test="useridcard != null" >
+        userIdCard,
+      </if>
+      <if test="usertype != null" >
+        userType,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="username != null" >
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userrealname != null" >
+        #{userrealname,jdbcType=VARCHAR},
+      </if>
+      <if test="passwd != null" >
+        #{passwd,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenumber != null" >
+        #{phonenumber,jdbcType=CHAR},
+      </if>
+      <if test="email != null" >
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="shopowner != null" >
+        #{shopowner,jdbcType=TINYINT},
+      </if>
+      <if test="registertime != null" >
+        #{registertime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="birthday != null" >
+        #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="headimageurl != null" >
+        #{headimageurl,jdbcType=VARCHAR},
+      </if>
+      <if test="useridcard != null" >
+        #{useridcard,jdbcType=VARCHAR},
+      </if>
+      <if test="usertype != null" >
+        #{usertype,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.UserInfo" >
+    update wj_user_info
+    <set >
+      <if test="username != null" >
+        userName = #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="userrealname != null" >
+        userRealName = #{userrealname,jdbcType=VARCHAR},
+      </if>
+      <if test="passwd != null" >
+        passwd = #{passwd,jdbcType=VARCHAR},
+      </if>
+      <if test="phonenumber != null" >
+        phoneNumber = #{phonenumber,jdbcType=CHAR},
+      </if>
+      <if test="email != null" >
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="shopowner != null" >
+        shopOwner = #{shopowner,jdbcType=TINYINT},
+      </if>
+      <if test="registertime != null" >
+        registerTime = #{registertime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="birthday != null" >
+        birthDay = #{birthday,jdbcType=TIMESTAMP},
+      </if>
+      <if test="headimageurl != null" >
+        headImageUrl = #{headimageurl,jdbcType=VARCHAR},
+      </if>
+      <if test="useridcard != null" >
+        userIdCard = #{useridcard,jdbcType=VARCHAR},
+      </if>
+      <if test="usertype != null" >
+        userType = #{usertype,jdbcType=TINYINT},
+      </if>
+    </set>
+    where uid = #{uid,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.UserInfo" >
+    update wj_user_info
+    set userName = #{username,jdbcType=VARCHAR},
+      userRealName = #{userrealname,jdbcType=VARCHAR},
+      passwd = #{passwd,jdbcType=VARCHAR},
+      phoneNumber = #{phonenumber,jdbcType=CHAR},
+      email = #{email,jdbcType=VARCHAR},
+      shopOwner = #{shopowner,jdbcType=TINYINT},
+      registerTime = #{registertime,jdbcType=TIMESTAMP},
+      birthDay = #{birthday,jdbcType=TIMESTAMP},
+      headImageUrl = #{headimageurl,jdbcType=VARCHAR},
+      userIdCard = #{useridcard,jdbcType=VARCHAR},
+      userType = #{usertype,jdbcType=TINYINT}
+    where uid = #{uid,jdbcType=BIGINT}
+  </update>
+</mapper>

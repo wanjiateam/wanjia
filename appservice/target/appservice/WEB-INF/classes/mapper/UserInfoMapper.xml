@@ -42,7 +42,7 @@
     where
 
     <choose>
-      <when test="type == 0">
+      <when test="type == 1">
          phoneNumber = #{token}
       </when>
 
@@ -59,7 +59,7 @@
     where
         passwd = #{passwd}
     <choose>
-      <when test="type == 0">
+      <when test="type == 1">
        AND  phoneNumber = #{token}
       </when>
       <otherwise>

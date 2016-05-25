@@ -1,5 +1,6 @@
 package com.wanjia.controller;
 
+import com.wanjia.auth.AuthPassport;
 import com.wanjia.entity.UserInfo;
 import com.wanjia.service.UserService;
 import com.wanjia.utils.JsonUtil;
@@ -35,6 +36,7 @@ public class UserController {
      * @return returncode 0 表示手机号已经被注册 1表示注册成功
      */
 
+    @AuthPassport
     @RequestMapping(value = "add", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String addUser(String phoneNumber,String passwd ){
@@ -91,29 +93,40 @@ public class UserController {
 
     @RequestMapping(value = "generateVerifyCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String verifyCode(String phoneNumber,int expireSeconds){
+    public String sendVerifyCode(String phoneNumber,int expireSeconds){
 
         ReturnMessage message = new ReturnMessage();
-        message.setType("verifyCode");
+        message.setType("sendVerifyCode");
         int returncode =  userService.sendVerifyCode(phoneNumber,expireSeconds);
-        /*if(returncode == 0){
-            message.setCode(-1);
-            if(type==0){
-                message.setMessage("email does not exist");
-            }else{
-                message.setMessage("phone does not exist");
-            }
-        }else{
-            returncode = userService.userLogin(token, passwd, type);
-            if(returncode != 0){
-                message.setCode(1);
-                message.setMessage("success");
-            }else {
-                message.setCode(-1);
-                message.setMessage("passwd error");
-            }
-        }*/
+
+        if(returncode==1){
+            message.setCode(1);
+            message.setMessage("success");
+        }else {
+            message.setCode(0);
+            message.setMessage("send code failed");
+        }
         return JsonUtil.toJsonString(message);
     }
 
+    @RequestMapping(value = "checkSmsCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String checkSmsCode(String phoneNumber,String smsCode){
+
+        ReturnMessage message = new ReturnMessage();
+        message.setType("checkSmsCode");
+        int returncode =  userService.checkSmsCode(phoneNumber,smsCode);
+
+        if(returncode==0){
+            message.setCode(0);
+            message.setMessage("sms expire or not exist");
+        }else if(returncode == 1){
+            message.setCode(1);
+            message.setMessage("success");
+        }else if(returncode == 2){
+            message.setCode(1);
+            message.setMessage("sms code wrong");
+        }
+        return JsonUtil.toJsonString(message);
+    }
 }

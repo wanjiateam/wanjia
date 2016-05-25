@@ -20,6 +20,9 @@
     <!-- 开启注解 -->
     <mvc:annotation-driven/>
 
+    <mvc:interceptors>
+        <bean class="com.wanjia.auth.AuthInterceptor"></bean>
+    </mvc:interceptors>
     <!-- 文件上传处理 -->
     <bean id="multipartResolver"
           class="org.springframework.web.multipart.commons.CommonsMultipartResolver">

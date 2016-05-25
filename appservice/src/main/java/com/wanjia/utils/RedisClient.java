@@ -23,7 +23,7 @@ public class RedisClient {
         jedis.expire(key,expireSecond);
     }
 
-    public String getValueByKey(String key,String value){
+    public String getValueByKey(String key){
         return jedis.get(key) ;
     }
 

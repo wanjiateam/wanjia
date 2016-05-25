@@ -57,4 +57,20 @@
         <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
     </context:component-scan>
 
+    <!--短信发送bean-->
+    <bean id="messageClient" class="com.wanjia.utils.MessageClient" scope="singleton">
+        <constructor-arg type="java.lang.String" name="dayu_url" value="${dayu_url}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="dayu_appkey" value="${dayu_appkey}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="dayu_secret" value="${dayu_secret}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="smsSignName" value="${smsSignName}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="smsTemplate" value="${smsTemplate}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="product" value="${product}"></constructor-arg>
+    </bean>
+
+    <!--redis连接bean-->
+    <bean id="redisClient" class="com.wanjia.utils.RedisClient" scope="singleton">
+        <constructor-arg type="java.lang.String" name="redisIp" value="${redishost}"></constructor-arg>
+        <constructor-arg type="int" name="redisPort" value="${redisport}"></constructor-arg>
+    </bean>
+
 </beans>

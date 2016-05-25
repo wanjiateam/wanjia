@@ -10,9 +10,9 @@ import org.apache.log4j.Logger;
 /**
  * Created by hsb11289 on 2016/5/25.
  */
-public class SmsClient {
+public class MessageClient {
 
-    private Logger logger = Logger.getLogger(SmsClient.class);
+    private Logger logger = Logger.getLogger(MessageClient.class);
 
     TaobaoClient client;
     private String dayu_url;
@@ -42,7 +42,7 @@ public class SmsClient {
      * @param smsTemplate 大鱼短信发送模板
      * @param product     公司简称（玩家）
      */
-    public SmsClient(String dayu_url, String dayu_appkey, String dayu_secret, String smsSignName, String smsTemplate, String product) {
+    public MessageClient(String dayu_url, String dayu_appkey, String dayu_secret, String smsSignName, String smsTemplate, String product) {
         this.dayu_url = dayu_url;
         this.dayu_appkey = dayu_appkey;
         this.dayu_secret = dayu_secret;
@@ -62,7 +62,7 @@ public class SmsClient {
         int sendSuccess = 0;
         AlibabaAliqinFcSmsNumSendRequest req = new AlibabaAliqinFcSmsNumSendRequest();
         req.setSmsType("normal");
-        req.setSmsFreeSignName(smsSignName);
+        req.setSmsFreeSignName("短信测试");
         req.setSmsParamString("{\"code\":\"" + code + "\",\"product\":\"" + product + "\"}");
         req.setRecNum(phoneNumber);
         req.setSmsTemplateCode(smsTemplate);
@@ -73,7 +73,7 @@ public class SmsClient {
             logger.error("send sms encouter an error", e);
         }
         String smsReturnMsg = rsp.getBody();
-        if (smsReturnMsg.contains("\"err_code\":true")) {
+        if (smsReturnMsg.contains("\"success\":true")) {
             sendSuccess = 1;
         } else {
             logger.error("send sms error", new Exception(smsReturnMsg));

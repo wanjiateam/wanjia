@@ -2,4 +2,13 @@
 logs
 tags/*
 !tags
-
+target/generated-sources/
+target/generated-test-sources/
+appservice.iml
+target/appservice/WEB-INF/classes/com/wanjia/utils/RedisClient.class
+target/appservice/WEB-INF/classes/com/wanjia/utils/SMSClient.class
+target/appservice/WEB-INF/classes/com/wanjia/utils/SmsErrorMessage.class
+target/appservice/WEB-INF/classes/properties/redis.properties
+target/appservice/WEB-INF/classes/properties/sms.properties
+target/appservice/WEB-INF/lib/commons-pool2-2.4.2.jar
+target/appservice/WEB-INF/lib/jedis-2.8.1.jar

@@ -43,11 +43,11 @@
 
     <choose>
       <when test="type == 0">
-         phoneNumber = #{phoneNumber}
+         phoneNumber = #{token}
       </when>
 
       <otherwise>
-          email = #{email}
+          email = #{token}
       </otherwise>
     </choose>
   </select>
@@ -60,10 +60,10 @@
         passwd = #{passwd}
     <choose>
       <when test="type == 0">
-        phoneNumber = #{phoneNumber}
+       AND  phoneNumber = #{token}
       </when>
       <otherwise>
-        email = #{email}
+        AND email = #{token}
       </otherwise>
     </choose>
   </select>

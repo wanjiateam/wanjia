@@ -2,6 +2,8 @@ package com.wanjia.dao;
 
 import com.wanjia.entity.UserInfo;
 
+import java.util.Map;
+
 public interface UserInfoMapper {
     int deleteByPrimaryKey(Long uid);
 
@@ -15,7 +17,7 @@ public interface UserInfoMapper {
 
     int updateByPrimaryKey(UserInfo record);
     int checkIfPhoneNumberExist(String phoneNumber);
-    int checkIfUserExist(String token,int type);
-    int userLogin(String token,String passwd,int type );
+    int checkIfUserExist(Map map);
+    int userLogin(Map map );
 
 }

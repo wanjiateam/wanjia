@@ -10,4 +10,5 @@ public interface UserService {
     public int addUser(UserInfo userInfo);
     public int checkIfUserExist(String token,int type);
     public int userLogin(String token ,String passwd,int type );
+    public int sendVerifyCode(String phoneNumber,int expireSeconds);
 }

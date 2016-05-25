@@ -10,6 +10,7 @@ public class JsonUtil {
     public static Gson gson = new Gson() ;
 
     public static String toJsonString(Object o){
+
         return gson.toJson(o);
     }
 

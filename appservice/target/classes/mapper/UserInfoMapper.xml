@@ -42,12 +42,12 @@
     where
 
     <choose>
-      <when test="type == 0">
-         phoneNumber = #{phoneNumber}
+      <when test="type == 1">
+         phoneNumber = #{token}
       </when>
 
       <otherwise>
-          email = #{email}
+          email = #{token}
       </otherwise>
     </choose>
   </select>
@@ -59,11 +59,11 @@
     where
         passwd = #{passwd}
     <choose>
-      <when test="type == 0">
-        phoneNumber = #{phoneNumber}
+      <when test="type == 1">
+       AND  phoneNumber = #{token}
       </when>
       <otherwise>
-        email = #{email}
+        AND email = #{token}
       </otherwise>
     </choose>
   </select>

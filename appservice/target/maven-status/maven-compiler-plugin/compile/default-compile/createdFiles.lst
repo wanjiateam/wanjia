@@ -1,0 +1,12 @@
+com\wanjia\utils\RedisClient.class
+com\wanjia\utils\MessageClient.class
+com\wanjia\service\impl\UserServiceImpl.class
+com\wanjia\utils\SmsErrorMessage.class
+com\wanjia\utils\JsonUtil.class
+com\wanjia\controller\UserController.class
+com\wanjia\dao\UserInfoMapper.class
+com\wanjia\auth\AuthInterceptor.class
+com\wanjia\auth\AuthPassport.class
+com\wanjia\service\UserService.class
+com\wanjia\entity\UserInfo.class
+com\wanjia\utils\ReturnMessage.class

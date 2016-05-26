@@ -19,5 +19,6 @@ public interface UserInfoMapper {
     int checkIfPhoneNumberExist(String phoneNumber);
     int checkIfUserExist(Map map);
     int userLogin(Map map );
+    void updateUserPassword(Map map);
 
 }

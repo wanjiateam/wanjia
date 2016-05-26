@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
@@ -33,18 +34,18 @@ public class UserController {
      *用户注册
      * @param phoneNumber
      * @param passwd
-     * @return returncode 0 表示手机号已经被注册 1表示注册成功
+     * @return returncode 0 表示手机号已经被注册 1表示注册成功 2 表示验证码过期或者不存在 3验证码错误
      */
 
     @AuthPassport
     @RequestMapping(value = "add", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String addUser(String phoneNumber,String passwd ){
+    public String addUser(String phoneNumber,String passwd ,String smsCode){
 
         UserInfo userInfo = new UserInfo();
         userInfo.setPhonenumber(phoneNumber);
         userInfo.setPasswd(passwd);
-        int returncode =  userService.addUser(userInfo);
+        int returncode =  userService.addUser(userInfo,smsCode);
         ReturnMessage message = new ReturnMessage();
         message.setType("addUser");
         message.setCode(returncode);
@@ -52,8 +53,11 @@ public class UserController {
             message.setMessage("add user success");
         }else if(returncode == 0){
             message.setMessage("user alreay exist");
+        }else if(returncode == 2){
+            message.setMessage("sms code expire");
+        }else if(returncode == 3){
+            message.setMessage("sms code wrong");
         }
-
         return JsonUtil.toJsonString(message);
     }
 
@@ -91,20 +95,27 @@ public class UserController {
         return JsonUtil.toJsonString(message);
     }
 
-    @RequestMapping(value = "generateVerifyCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    /**
+     *
+     * @param phoneNumber
+     * @param expireSeconds
+     * @param isUserExist 0 添加用户 1 找回密码
+     * @return 表示发送失败 1 表示发送成功 2表示用户不存在（在找回密码时候有效）
+     */
+    @RequestMapping(value = "sendSmsCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String sendVerifyCode(String phoneNumber,int expireSeconds){
+    public String sendVerifyCode(String phoneNumber,int expireSeconds,byte isUserExist){
 
         ReturnMessage message = new ReturnMessage();
         message.setType("sendVerifyCode");
-        int returncode =  userService.sendVerifyCode(phoneNumber,expireSeconds);
-
+        int returncode =  userService.sendVerifyCode(phoneNumber,expireSeconds,isUserExist);
+        message.setCode(returncode);
         if(returncode==1){
-            message.setCode(1);
             message.setMessage("success");
-        }else {
-            message.setCode(0);
+        }else if(returncode == 0){
             message.setMessage("send code failed");
+        }else if (returncode == 2){
+            message.setMessage("user does not exist");
         }
         return JsonUtil.toJsonString(message);
     }
@@ -126,6 +137,33 @@ public class UserController {
         }else if(returncode == 2){
             message.setCode(1);
             message.setMessage("sms code wrong");
+        }
+        return JsonUtil.toJsonString(message);
+    }
+
+    /**
+     *
+     * @param phoneNumber
+     * @param smsCode
+     * @param newPassword
+     * @return 0 验证码错误 1修改成功 2修改密码失败
+     */
+    @RequestMapping(value = "findPasswd", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String findPassword(String phoneNumber ,String smsCode, @RequestParam("newPassword") String newPassword){
+
+        int returncode = userService.findPassword(phoneNumber,smsCode,newPassword) ;
+
+        ReturnMessage message = new ReturnMessage();
+        message.setType("findPasswd");
+        message.setCode(returncode);
+
+        if(returncode==0){
+            message.setMessage("sms code error");
+        }else if(returncode == 1){
+            message.setMessage("success");
+        }else if(returncode == 2){
+            message.setMessage("update passwd error");
         }
         return JsonUtil.toJsonString(message);
     }

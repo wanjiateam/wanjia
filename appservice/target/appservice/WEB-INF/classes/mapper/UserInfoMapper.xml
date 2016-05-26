@@ -216,4 +216,10 @@
       userType = #{usertype,jdbcType=TINYINT}
     where uid = #{uid,jdbcType=BIGINT}
   </update>
+
+  <update id="updateUserPassword" >
+    update wj_user_info
+    set passwd = #{passwd}
+    where phoneNumber = #{phoneNumber}
+  </update>
 </mapper>

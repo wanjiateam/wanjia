@@ -30,15 +30,33 @@ public class UserServiceImpl implements UserService {
     @Autowired
     MessageClient messageClient ;
 
-    public int  addUser(UserInfo userInfo) {
+    /**
+     *
+     * @param userInfo
+     * @param smsCode
+     * @return 0 表示用户号码已经存在 1 添加用户成功  2 表示验证码过期或者不存在 3验证码错误
+     */
+    public int  addUser(UserInfo userInfo,String smsCode) {
 
-        int count =  userInfoMapper.checkIfPhoneNumberExist(userInfo.getPhonenumber());
-        if(count != 0 ){
-            return 0 ;
-        }else{
-            userInfoMapper.insert(userInfo);
-            return 1 ;
+        //第一步验证验证码是不是正确
+        int smsFlag = checkSmsCode(userInfo.getPhonenumber(),smsCode);
+        if(smsFlag == 1){
+
+            int count =  userInfoMapper.checkIfPhoneNumberExist(userInfo.getPhonenumber());
+            if(count != 0 ){
+                return 0 ;
+            }else{
+                userInfoMapper.insert(userInfo);
+                return 1 ;
+            }
+        }else if (smsFlag == 0){
+            return 2 ;
+        }else if(smsFlag == 2){
+            return 3 ;
         }
+
+        return smsFlag ;
+
 
     }
 
@@ -57,15 +75,32 @@ public class UserServiceImpl implements UserService {
        return  userInfoMapper.userLogin(map) ;
     }
 
-    public int sendVerifyCode(String phoneNumber, int expireSeconds) {
+    /**
+     *
+     * @param phoneNumber
+     * @param expireSeconds
+     * @param isUserExist 用户是不是已经存在，注册时是0 ，找回密码时是1
+     * @return 0 表示发送失败 1 表示发送成功  2表示用户不存在，用户找回密码时候有效
+     */
+    public int sendVerifyCode(String phoneNumber, int expireSeconds,byte isUserExist) {
 
         int sendFlag = 0 ;
         try {
-            String verifyCode = generateVerifyCode() ;
-            int sendCode = messageClient.sendCode(verifyCode,phoneNumber);
-            if(sendCode==1){
+            if (isUserExist == 0){
+                String verifyCode = generateVerifyCode() ;
                 redisClient.setKeyValue(phoneNumber,verifyCode,expireSeconds);
+                sendFlag = messageClient.sendCode(verifyCode,phoneNumber);
                 sendFlag =1 ;
+            }else if(isUserExist == 1){
+                int count =  userInfoMapper.checkIfPhoneNumberExist(phoneNumber);
+                if(count != 0 ){
+                    String verifyCode = generateVerifyCode() ;
+                    redisClient.setKeyValue(phoneNumber,verifyCode,expireSeconds);
+                    sendFlag = messageClient.sendCode(verifyCode,phoneNumber);
+                    sendFlag =1 ;
+                }else {
+                    sendFlag = 2 ;
+                }
             }
         } catch (Exception e) {
             logger.error("send verifycode error",e);
@@ -89,7 +124,6 @@ public class UserServiceImpl implements UserService {
      * @param smsCode
      * @return 0 验证码过期或者不存在 1验证成功 2验证码错误
      */
-    @Override
     public int checkSmsCode(String phoneNumber, String smsCode) {
         int flag = 0 ;
         String value =  redisClient.getValueByKey(phoneNumber);
@@ -101,5 +135,31 @@ public class UserServiceImpl implements UserService {
             flag = 2 ;
         }
         return flag;
+    }
+
+    /**
+     *
+     * @param phoneNumber
+     * @param smsCode
+     * @param newPassword
+     * @return 0 验证码错误 1修改成功 2修改密码失败
+     */
+    public int findPassword(String phoneNumber, String smsCode,String newPassword) {
+
+        int retcode = checkSmsCode(phoneNumber,smsCode);
+        if(retcode == 1){
+            Map map = new HashMap();
+            map.put("phoneNumber",phoneNumber);
+            map.put("passwd",newPassword);
+            try {
+                userInfoMapper.updateUserPassword(map);
+            } catch (Exception e) {
+                logger.error("update passwd error",e);
+                retcode = 2 ;
+            }
+        }else {
+            return  0 ;
+        }
+        return retcode ;
     }
 }

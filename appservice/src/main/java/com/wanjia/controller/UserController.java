@@ -66,7 +66,7 @@ public class UserController {
      * @param token
      * @param passwd
      * @param type 0 代表邮箱 1代表手机
-     * @return
+     * @return 0 代表email或者手机号码不存在 1表示成功 2表示密码错误
      */
     @RequestMapping(value = "login", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
@@ -76,7 +76,6 @@ public class UserController {
         message.setType("userLogin");
         int returncode =  userService.checkIfUserExist(token,type);
         if(returncode == 0){
-            message.setCode(-1);
             if(type==0){
                 message.setMessage("email does not exist");
             }else{
@@ -88,10 +87,11 @@ public class UserController {
                 message.setCode(1);
                 message.setMessage("success");
             }else {
-                message.setCode(-1);
+                message.setCode(2);
                 message.setMessage("passwd error");
             }
         }
+
         return JsonUtil.toJsonString(message);
     }
 
@@ -100,7 +100,7 @@ public class UserController {
      * @param phoneNumber
      * @param expireSeconds
      * @param isUserExist 0 添加用户 1 找回密码
-     * @return 表示发送失败 1 表示发送成功 2表示用户不存在（在找回密码时候有效）
+     * @return 0表示发送失败 1 表示发送成功 2表示用户不存在（在找回密码时候有效）
      */
     @RequestMapping(value = "sendSmsCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
@@ -120,6 +120,12 @@ public class UserController {
         return JsonUtil.toJsonString(message);
     }
 
+    /**
+     *
+     * @param phoneNumber
+     * @param smsCode
+     * @return  0 验证码过期或者不存在 1验证成功 2验证码错误
+     */
     @RequestMapping(value = "checkSmsCode", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String checkSmsCode(String phoneNumber,String smsCode){
@@ -127,15 +133,12 @@ public class UserController {
         ReturnMessage message = new ReturnMessage();
         message.setType("checkSmsCode");
         int returncode =  userService.checkSmsCode(phoneNumber,smsCode);
-
+        message.setCode(returncode);
         if(returncode==0){
-            message.setCode(0);
             message.setMessage("sms expire or not exist");
         }else if(returncode == 1){
-            message.setCode(1);
             message.setMessage("success");
         }else if(returncode == 2){
-            message.setCode(1);
             message.setMessage("sms code wrong");
         }
         return JsonUtil.toJsonString(message);

@@ -22,6 +22,6 @@ public class UserServiceTest extends SpringTestCase {
         UserInfo userInfo = new UserInfo();
         userInfo.setUsername("blake");
         userInfo.setEmail("1223@613.com");
-        userService.addUser(userInfo);
+        userService.addUser(userInfo,"123");
     }
 }

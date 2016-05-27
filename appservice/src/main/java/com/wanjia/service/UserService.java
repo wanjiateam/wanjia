@@ -13,5 +13,6 @@ public interface UserService {
     public int sendVerifyCode(String phoneNumber,int expireSeconds,byte isUserExist);
     public int checkSmsCode(String phoneNumber,String smsCode);
     public int findPassword(String phoneNumber,String smsCode,String newPassword);
+    public int loginByToken(String phoneNumber,int expireDays);
 
 }

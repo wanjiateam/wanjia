@@ -35,7 +35,7 @@
     phoneNumber, email, shopOwner,
     registerTime, birthDay, headImageUrl,
     userIdCard, userType)
-    values (#{username,jdbcType=VARCHAR}, #{userrealname,jdbcType=VARCHAR}, #{passwd,jdbcType=VARCHAR},
+    values (#{username,jdbcType=VARCHAR}, #{userrealname,jdbcType=VARCHAR}, MD5(#{passwd,jdbcType=VARCHAR}),
     #{phonenumber,jdbcType=CHAR}, #{email,jdbcType=VARCHAR}, #{shopowner,jdbcType=TINYINT},
     #{registertime,jdbcType=TIMESTAMP}, #{birthday,jdbcType=TIMESTAMP}, #{headimageurl,jdbcType=VARCHAR},
     #{useridcard,jdbcType=VARCHAR}, #{usertype,jdbcType=TINYINT})
@@ -89,7 +89,7 @@
         #{userrealname,jdbcType=VARCHAR},
       </if>
       <if test="passwd != null">
-        #{passwd,jdbcType=VARCHAR},
+        MD5(#{passwd,jdbcType=VARCHAR}),
       </if>
       <if test="phonenumber != null">
         #{phonenumber,jdbcType=CHAR},
@@ -170,7 +170,7 @@
     update wj_user_info
     set userName = #{username,jdbcType=VARCHAR},
     userRealName = #{userrealname,jdbcType=VARCHAR},
-    passwd = #{passwd,jdbcType=VARCHAR},
+    passwd = MD5(#{passwd,jdbcType=VARCHAR}),
     phoneNumber = #{phonenumber,jdbcType=CHAR},
     email = #{email,jdbcType=VARCHAR},
     shopOwner = #{shopowner,jdbcType=TINYINT},
@@ -211,7 +211,7 @@
     count(1)
     from wj_user_info
     where
-    passwd = #{passwd}
+    passwd = MD5(#{passwd})
     <choose>
       <when test="type == 1">
         AND  phoneNumber = #{token}
@@ -226,7 +226,7 @@
 
   <update id="updateUserPassword">
     update wj_user_info
-    set passwd = #{passwd}
+    set passwd = MD5(#{passwd})
     where phoneNumber = #{phoneNumber}
   </update>
 </mapper>

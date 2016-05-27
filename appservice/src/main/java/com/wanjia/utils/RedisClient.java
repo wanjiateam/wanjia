@@ -19,12 +19,16 @@ public class RedisClient {
     }
 
     public void setKeyValue(String key,String value,int expireSecond){
-        jedis.set(key,value);
-        jedis.expire(key,expireSecond);
+        jedis.setex(key,expireSecond,value) ;
     }
 
     public String getValueByKey(String key){
         return jedis.get(key) ;
+    }
+
+
+    public boolean checkIfKeyExist(String key) throws Exception{
+       return  jedis.exists(key) ;
     }
 
 

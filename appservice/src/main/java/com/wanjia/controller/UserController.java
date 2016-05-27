@@ -1,6 +1,5 @@
 package com.wanjia.controller;
 
-import com.wanjia.auth.AuthPassport;
 import com.wanjia.entity.UserInfo;
 import com.wanjia.service.UserService;
 import com.wanjia.utils.JsonUtil;
@@ -37,7 +36,6 @@ public class UserController {
      * @return returncode 0 表示手机号已经被注册 1表示注册成功 2 表示验证码过期或者不存在 3验证码错误
      */
 
-    @AuthPassport
     @RequestMapping(value = "add", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String addUser(String phoneNumber,String passwd ,String smsCode){
@@ -82,7 +80,7 @@ public class UserController {
                 message.setMessage("phone does not exist");
             }
         }else{
-          returncode = userService.userLogin(token, passwd, type);
+            returncode = userService.userLogin(token, passwd, type);
             if(returncode != 0){
                 message.setCode(1);
                 message.setMessage("success");
@@ -91,6 +89,17 @@ public class UserController {
                 message.setMessage("passwd error");
             }
         }
+
+        return JsonUtil.toJsonString(message);
+    }
+
+    @RequestMapping(value = "loginByToken", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String userLoginByToken(String token,int expireDays){
+
+        ReturnMessage message = new ReturnMessage();
+        message.setType("userLogin");
+        int returncode =  userService
 
         return JsonUtil.toJsonString(message);
     }

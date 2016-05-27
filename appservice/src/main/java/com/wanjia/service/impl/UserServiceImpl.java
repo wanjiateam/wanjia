@@ -46,7 +46,7 @@ public class UserServiceImpl implements UserService {
             if(count != 0 ){
                 return 0 ;
             }else{
-                userInfoMapper.insert(userInfo);
+                userInfoMapper.insertSelective(userInfo);
                 return 1 ;
             }
         }else if (smsFlag == 0){
@@ -161,5 +161,21 @@ public class UserServiceImpl implements UserService {
             return  0 ;
         }
         return retcode ;
+    }
+
+    public int loginByToken(String token, int expireDays) {
+
+        int flag = 0 ;
+        try {
+            boolean isExist = redisClient.checkIfKeyExist(token) ;
+            flag = 1 ;
+            if(isExist){
+                int seconds = expireDays*24*60*60 ;
+                redisClient.setKeyValue(token,"1",seconds);
+            }
+        } catch (Exception e) {
+            logger.error("loginByToken error",e);
+        }
+        return flag;
     }
 }

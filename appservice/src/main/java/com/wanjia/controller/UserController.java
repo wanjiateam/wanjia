@@ -3,9 +3,8 @@ package com.wanjia.controller;
 import com.wanjia.entity.UserInfo;
 import com.wanjia.service.UserService;
 import com.wanjia.utils.JsonUtil;
-import com.wanjia.utils.ReturnMessage;
+import com.wanjia.utils.UserReturnJson;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,39 +22,22 @@ public class UserController {
     @Resource
     private UserService userService ;
 
-    @RequestMapping(value = "hello",method = RequestMethod.GET)
-    public String printWelcome(ModelMap model){
-        model.addAttribute("message","hello world");
-        return "hello" ;
-    }
+
 
     /**
      *用户注册
      * @param phoneNumber
      * @param passwd
-     * @return returncode 0 表示手机号已经被注册 1表示注册成功 2 表示验证码过期或者不存在 3验证码错误
+     * @return
      */
 
     @RequestMapping(value = "add", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String addUser(String phoneNumber,String passwd ,String smsCode){
-
+    public String addUser(String phoneNumber,String passwd ,String smsCode,String deviceId,int expireDays){
         UserInfo userInfo = new UserInfo();
         userInfo.setPhonenumber(phoneNumber);
         userInfo.setPasswd(passwd);
-        int returncode =  userService.addUser(userInfo,smsCode);
-        ReturnMessage message = new ReturnMessage();
-        message.setType("addUser");
-        message.setCode(returncode);
-        if(returncode==1){
-            message.setMessage("add user success");
-        }else if(returncode == 0){
-            message.setMessage("user alreay exist");
-        }else if(returncode == 2){
-            message.setMessage("sms code expire");
-        }else if(returncode == 3){
-            message.setMessage("sms code wrong");
-        }
+        UserReturnJson message  =  userService.addUser(userInfo,smsCode,deviceId,expireDays);
         return JsonUtil.toJsonString(message);
     }
 
@@ -68,40 +50,50 @@ public class UserController {
      */
     @RequestMapping(value = "login", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String userLogin(String token,String passwd,int type){
+    public String userLogin(String token,String passwd,int type,String deviceId,int expireDays){
 
-        ReturnMessage message = new ReturnMessage();
-        message.setType("userLogin");
+        UserReturnJson userReturnJson = new UserReturnJson();
+        userReturnJson.setType("userLogin");
+
         int returncode =  userService.checkIfUserExist(token,type);
+
         if(returncode == 0){
+            userReturnJson.setCode(returncode);
             if(type==0){
-                message.setMessage("email does not exist");
+                userReturnJson.setMessage("email does not exist");
             }else{
-                message.setMessage("phone does not exist");
+                userReturnJson.setMessage("phone does not exist");
             }
         }else{
-            returncode = userService.userLogin(token, passwd, type);
-            if(returncode != 0){
-                message.setCode(1);
-                message.setMessage("success");
-            }else {
-                message.setCode(2);
-                message.setMessage("passwd error");
-            }
+              userService.userLogin(token, passwd, type,deviceId,expireDays,userReturnJson);
         }
 
-        return JsonUtil.toJsonString(message);
+        return JsonUtil.toJsonString(userReturnJson);
     }
 
+    /**
+     *
+     * @param token
+     * @param expireDays
+     * @return 0 表示登陆失败 1 表示登陆成功
+     */
     @RequestMapping(value = "loginByToken", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String userLoginByToken(String token,int expireDays){
 
-        ReturnMessage message = new ReturnMessage();
-        message.setType("userLogin");
-        int returncode =  userService
+        UserReturnJson userReturnJson = new UserReturnJson();
+        userReturnJson.setType("userLoginByToken");
 
-        return JsonUtil.toJsonString(message);
+        int returncode =  userService.loginByToken(token,expireDays) ;
+        userReturnJson.setToken(token);
+        userReturnJson.setCode(returncode);
+        if (returncode == 0){
+            userReturnJson.setMessage("login fail");
+        }else if(returncode ==1){
+            userReturnJson.setMessage("success");
+        }
+
+        return JsonUtil.toJsonString(userReturnJson);
     }
 
     /**
@@ -115,7 +107,7 @@ public class UserController {
     @ResponseBody
     public String sendVerifyCode(String phoneNumber,int expireSeconds,byte isUserExist){
 
-        ReturnMessage message = new ReturnMessage();
+        UserReturnJson message = new UserReturnJson();
         message.setType("sendVerifyCode");
         int returncode =  userService.sendVerifyCode(phoneNumber,expireSeconds,isUserExist);
         message.setCode(returncode);
@@ -139,7 +131,7 @@ public class UserController {
     @ResponseBody
     public String checkSmsCode(String phoneNumber,String smsCode){
 
-        ReturnMessage message = new ReturnMessage();
+        UserReturnJson message = new UserReturnJson();
         message.setType("checkSmsCode");
         int returncode =  userService.checkSmsCode(phoneNumber,smsCode);
         message.setCode(returncode);
@@ -162,21 +154,9 @@ public class UserController {
      */
     @RequestMapping(value = "findPasswd", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String findPassword(String phoneNumber ,String smsCode, @RequestParam("newPassword") String newPassword){
+    public String findPassword(String phoneNumber ,String smsCode, @RequestParam("newPassword") String newPassword,String deviceId,int expireDays){
 
-        int returncode = userService.findPassword(phoneNumber,smsCode,newPassword) ;
-
-        ReturnMessage message = new ReturnMessage();
-        message.setType("findPasswd");
-        message.setCode(returncode);
-
-        if(returncode==0){
-            message.setMessage("sms code error");
-        }else if(returncode == 1){
-            message.setMessage("success");
-        }else if(returncode == 2){
-            message.setMessage("update passwd error");
-        }
-        return JsonUtil.toJsonString(message);
+        UserReturnJson userReturnJson = userService.findPassword(phoneNumber,smsCode,newPassword,deviceId,expireDays) ;
+        return JsonUtil.toJsonString(userReturnJson);
     }
 }

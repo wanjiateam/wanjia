@@ -5,10 +5,15 @@ import com.wanjia.entity.UserInfo;
 import com.wanjia.service.UserService;
 import com.wanjia.utils.MessageClient;
 import com.wanjia.utils.RedisClient;
+import com.wanjia.utils.UserReturnJson;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -30,36 +35,61 @@ public class UserServiceImpl implements UserService {
     @Autowired
     MessageClient messageClient ;
 
+    @Autowired
+    BASE64Encoder encoder ;
+
+    @Autowired
+    BASE64Decoder decoder ;
+
+
     /**
      *
      * @param userInfo
      * @param smsCode
      * @return 0 表示用户号码已经存在 1 添加用户成功  2 表示验证码过期或者不存在 3验证码错误
      */
-    public int  addUser(UserInfo userInfo,String smsCode) {
+    public UserReturnJson addUser(UserInfo userInfo, String smsCode, String deviceId, int expireDays) {
 
+        UserReturnJson userReturnJson = new UserReturnJson() ;
+        userReturnJson.setType("addUser");
         //第一步验证验证码是不是正确
         int smsFlag = checkSmsCode(userInfo.getPhonenumber(),smsCode);
         if(smsFlag == 1){
 
             int count =  userInfoMapper.checkIfPhoneNumberExist(userInfo.getPhonenumber());
+            //把token存到redis中
+
+            StringBuilder token = new StringBuilder();
+            token.append(deviceId).append("_").append(1).append("_").append(userInfo.getPhonenumber());
+            String encodeToken = encoder.encode(token.toString().getBytes()) ;
+            this.storeTokenInRedis(encodeToken,"1_"+userInfo.getPhonenumber(),expireDays);
             if(count != 0 ){
-                return 0 ;
+                userReturnJson.setCode(0);
             }else{
                 userInfoMapper.insertSelective(userInfo);
-                return 1 ;
+                userReturnJson.setCode(1);
+                userReturnJson.setToken(encodeToken);
+                userReturnJson.setMessage("add user success");
             }
         }else if (smsFlag == 0){
-            return 2 ;
+            userReturnJson.setCode(2);
+            userReturnJson.setMessage("user alreay exist");
         }else if(smsFlag == 2){
-            return 3 ;
+            userReturnJson.setCode(3);
+            userReturnJson.setMessage("sms code wrong");
         }
 
-        return smsFlag ;
+        return userReturnJson ;
 
 
     }
 
+    /**
+     * 检查用户是否存在
+     * @param token
+     * @param type
+     * @return 0 表示不存在
+     */
     public int checkIfUserExist(String token, int type) {
         Map map = new HashMap();
         map.put("type",type);
@@ -67,12 +97,34 @@ public class UserServiceImpl implements UserService {
         return userInfoMapper.checkIfUserExist(map);
     }
 
-    public int userLogin(String token, String passwd, int type){
+    /**
+     *
+     * @param token
+     * @param passwd
+     * @param type
+     * @param deviceId
+     * @param expireDays
+     * @return 0 登陆失败 1 登陆成功
+     */
+    public void userLogin(String token, String passwd, int type,String deviceId,int expireDays,UserReturnJson userReturnJson){
+        int flag = 0 ;
         Map map  = new HashMap();
         map.put("token",token);
         map.put("passwd",passwd);
-        map.put("type",type);
-       return  userInfoMapper.userLogin(map) ;
+        int retcode = userInfoMapper.userLogin(map) ;
+        if(retcode != 0 ){
+            userReturnJson.setCode(1);
+            flag = 1 ;
+            StringBuilder sb = new StringBuilder();
+            sb.append(deviceId).append("_").append(0).append("_").append(token);
+            String encodeToken = encoder.encode(token.toString().getBytes()) ;
+            this.storeTokenInRedis(encodeToken,type+"_"+token,expireDays);
+            userReturnJson.setToken(token);
+            userReturnJson.setMessage("success");
+        }else{
+            userReturnJson.setCode(2);
+            userReturnJson.setMessage("passwd error");
+        }
     }
 
     /**
@@ -144,7 +196,10 @@ public class UserServiceImpl implements UserService {
      * @param newPassword
      * @return 0 验证码错误 1修改成功 2修改密码失败
      */
-    public int findPassword(String phoneNumber, String smsCode,String newPassword) {
+    public UserReturnJson findPassword(String phoneNumber, String smsCode,String newPassword,String deviceId,int expireDays) {
+
+        UserReturnJson userReturnJson = new UserReturnJson() ;
+        userReturnJson.setType("findPassword");
 
         int retcode = checkSmsCode(phoneNumber,smsCode);
         if(retcode == 1){
@@ -153,16 +208,26 @@ public class UserServiceImpl implements UserService {
             map.put("passwd",newPassword);
             try {
                 userInfoMapper.updateUserPassword(map);
+                userReturnJson.setCode(1);
+                userReturnJson.setMessage("update passwd success");
             } catch (Exception e) {
                 logger.error("update passwd error",e);
-                retcode = 2 ;
+                userReturnJson.setCode(2);
+                userReturnJson.setMessage("update passwd error");
             }
         }else {
-            return  0 ;
+            userReturnJson.setCode(0);
+            userReturnJson.setMessage("sms code error");
         }
-        return retcode ;
+        return userReturnJson ;
     }
 
+    /**
+     *
+     * @param token
+     * @param expireDays
+     * @return 0 表示登陆失败 1 表示登陆成功
+     */
     public int loginByToken(String token, int expireDays) {
 
         int flag = 0 ;
@@ -178,4 +243,16 @@ public class UserServiceImpl implements UserService {
         }
         return flag;
     }
+
+    public void storeTokenInRedis(String token,String value ,int expireDays){
+        int seconds = expireDays*24*60*60 ;
+        try {
+            redisClient.setKeyValue(token,value ,seconds);
+        } catch (Exception e) {
+           logger.error("set value to redis  error",e);
+        }
+    }
+
+
+
 }

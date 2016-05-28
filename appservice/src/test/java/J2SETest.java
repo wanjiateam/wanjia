@@ -1,5 +1,8 @@
 import org.junit.Test;
+import sun.misc.BASE64Decoder;
+import sun.misc.BASE64Encoder;
 
+import java.io.IOException;
 import java.util.Random;
 
 /**
@@ -17,6 +20,25 @@ public class J2SETest {
         }
         System.out.println(code.toString());
         ;
+    }
+
+
+    @Test
+    public void testBase64(){
+
+
+        BASE64Encoder encoder = new BASE64Encoder() ;
+        String encodeString =  encoder.encode("123".getBytes()) ;
+        System.out.println(encodeString);
+        BASE64Decoder  decoder = new BASE64Decoder();
+        try {
+            String originString =   new String(decoder.decodeBuffer(encodeString)) ;
+            System.out.println(originString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
     }
+
+
 }

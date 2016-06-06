@@ -72,5 +72,6 @@
         <constructor-arg type="java.lang.String" name="redisIp" value="${redishost}"></constructor-arg>
         <constructor-arg type="int" name="redisPort" value="${redisport}"></constructor-arg>
     </bean>
-
+    <bean id="encoder" class="sun.misc.BASE64Encoder"/>
+    <bean id="decoder" class="sun.misc.BASE64Decoder"/>
 </beans>

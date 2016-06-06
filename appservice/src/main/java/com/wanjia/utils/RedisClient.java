@@ -2,6 +2,8 @@ package com.wanjia.utils;
 
 import redis.clients.jedis.Jedis;
 
+import java.util.Set;
+
 /**
  * Created by hsb11289 on 2016/5/25.
  */
@@ -29,6 +31,10 @@ public class RedisClient {
 
     public boolean checkIfKeyExist(String key) throws Exception{
        return  jedis.exists(key) ;
+    }
+
+    public Set<String> getSortedSet(String key){
+        return   jedis.zrevrange(key,0,-1) ;
     }
 
 

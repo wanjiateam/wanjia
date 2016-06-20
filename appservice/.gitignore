@@ -1,6 +1,5 @@
-.idea
-logs
-target
+.idea/
+logs/
+target/
 appservice.iml
-configFiles
-
+configFiles/

@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.ResortInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.ResortInfo" >
+    <constructor >
+      <idArg column="resortId" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="resortName" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="resortPinYin" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="lat" jdbcType="DOUBLE" javaType="java.lang.Double" />
+      <arg column="lon" jdbcType="DOUBLE" javaType="java.lang.Double" />
+      <arg column="resortAddressProvince" jdbcType="SMALLINT" javaType="java.lang.Short" />
+      <arg column="resortAddressCity" jdbcType="SMALLINT" javaType="java.lang.Short" />
+      <arg column="resortAddressDetailInfo" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="resortIntroduce" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="resortNotice" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="hotSeason" jdbcType="SMALLINT" javaType="java.lang.Short" />
+    </constructor>
+  </resultMap>
+
+    <resultMap id="resortNameAndPinYinResult" type="com.wanjia.entity.ResortInfo" >
+        <result column="resortname" property="resortname"/>
+        <result column="resortPinYin" property="resortpinyin" />
+    </resultMap>
+
+
+  <sql id="Base_Column_List" >
+    resortId, resortName, resortPinYin, lat, lon, resortAddressProvince, resortAddressCity, 
+    resortAddressDetailInfo, resortIntroduce, resortNotice, hotSeason
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_resource_travel_resort_info
+    where resortId = #{resortid,jdbcType=INTEGER}
+  </select>
+
+
+  <select id="getAllResortNameAndPinYin" resultMap="resortNameAndPinYinResult">
+        select
+        resortName, resortPinYin
+        from wj_resource_travel_resort_info order by resortPinYin
+  </select>
+
+
+    <select id="getResortCount" resultType="java.lang.Integer">
+        select
+        count(1)
+        from wj_resource_travel_resort_info
+    </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+    delete from wj_resource_travel_resort_info
+    where resortId = #{resortid,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.wanjia.entity.ResortInfo" >
+    insert into wj_resource_travel_resort_info (resortId, resortName, resortPinYin, 
+      lat, lon, resortAddressProvince, 
+      resortAddressCity, resortAddressDetailInfo, 
+      resortIntroduce, resortNotice, hotSeason
+      )
+    values (#{resortid,jdbcType=INTEGER}, #{resortname,jdbcType=VARCHAR}, #{resortpinyin,jdbcType=VARCHAR}, 
+      #{lat,jdbcType=DOUBLE}, #{lon,jdbcType=DOUBLE}, #{resortaddressprovince,jdbcType=SMALLINT}, 
+      #{resortaddresscity,jdbcType=SMALLINT}, #{resortaddressdetailinfo,jdbcType=VARCHAR}, 
+      #{resortintroduce,jdbcType=VARCHAR}, #{resortnotice,jdbcType=VARCHAR}, #{hotseason,jdbcType=SMALLINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.ResortInfo" >
+    insert into wj_resource_travel_resort_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="resortid != null" >
+        resortId,
+      </if>
+      <if test="resortname != null" >
+        resortName,
+      </if>
+      <if test="resortpinyin != null" >
+        resortPinYin,
+      </if>
+      <if test="lat != null" >
+        lat,
+      </if>
+      <if test="lon != null" >
+        lon,
+      </if>
+      <if test="resortaddressprovince != null" >
+        resortAddressProvince,
+      </if>
+      <if test="resortaddresscity != null" >
+        resortAddressCity,
+      </if>
+      <if test="resortaddressdetailinfo != null" >
+        resortAddressDetailInfo,
+      </if>
+      <if test="resortintroduce != null" >
+        resortIntroduce,
+      </if>
+      <if test="resortnotice != null" >
+        resortNotice,
+      </if>
+      <if test="hotseason != null" >
+        hotSeason,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="resortid != null" >
+        #{resortid,jdbcType=INTEGER},
+      </if>
+      <if test="resortname != null" >
+        #{resortname,jdbcType=VARCHAR},
+      </if>
+      <if test="resortpinyin != null" >
+        #{resortpinyin,jdbcType=VARCHAR},
+      </if>
+      <if test="lat != null" >
+        #{lat,jdbcType=DOUBLE},
+      </if>
+      <if test="lon != null" >
+        #{lon,jdbcType=DOUBLE},
+      </if>
+      <if test="resortaddressprovince != null" >
+        #{resortaddressprovince,jdbcType=SMALLINT},
+      </if>
+      <if test="resortaddresscity != null" >
+        #{resortaddresscity,jdbcType=SMALLINT},
+      </if>
+      <if test="resortaddressdetailinfo != null" >
+        #{resortaddressdetailinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="resortintroduce != null" >
+        #{resortintroduce,jdbcType=VARCHAR},
+      </if>
+      <if test="resortnotice != null" >
+        #{resortnotice,jdbcType=VARCHAR},
+      </if>
+      <if test="hotseason != null" >
+        #{hotseason,jdbcType=SMALLINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.ResortInfo" >
+    update wj_resource_travel_resort_info
+    <set >
+      <if test="resortname != null" >
+        resortName = #{resortname,jdbcType=VARCHAR},
+      </if>
+      <if test="resortpinyin != null" >
+        resortPinYin = #{resortpinyin,jdbcType=VARCHAR},
+      </if>
+      <if test="lat != null" >
+        lat = #{lat,jdbcType=DOUBLE},
+      </if>
+      <if test="lon != null" >
+        lon = #{lon,jdbcType=DOUBLE},
+      </if>
+      <if test="resortaddressprovince != null" >
+        resortAddressProvince = #{resortaddressprovince,jdbcType=SMALLINT},
+      </if>
+      <if test="resortaddresscity != null" >
+        resortAddressCity = #{resortaddresscity,jdbcType=SMALLINT},
+      </if>
+      <if test="resortaddressdetailinfo != null" >
+        resortAddressDetailInfo = #{resortaddressdetailinfo,jdbcType=VARCHAR},
+      </if>
+      <if test="resortintroduce != null" >
+        resortIntroduce = #{resortintroduce,jdbcType=VARCHAR},
+      </if>
+      <if test="resortnotice != null" >
+        resortNotice = #{resortnotice,jdbcType=VARCHAR},
+      </if>
+      <if test="hotseason != null" >
+        hotSeason = #{hotseason,jdbcType=SMALLINT},
+      </if>
+    </set>
+    where resortId = #{resortid,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.ResortInfo" >
+    update wj_resource_travel_resort_info
+    set resortName = #{resortname,jdbcType=VARCHAR},
+      resortPinYin = #{resortpinyin,jdbcType=VARCHAR},
+      lat = #{lat,jdbcType=DOUBLE},
+      lon = #{lon,jdbcType=DOUBLE},
+      resortAddressProvince = #{resortaddressprovince,jdbcType=SMALLINT},
+      resortAddressCity = #{resortaddresscity,jdbcType=SMALLINT},
+      resortAddressDetailInfo = #{resortaddressdetailinfo,jdbcType=VARCHAR},
+      resortIntroduce = #{resortintroduce,jdbcType=VARCHAR},
+      resortNotice = #{resortnotice,jdbcType=VARCHAR},
+      hotSeason = #{hotseason,jdbcType=SMALLINT}
+    where resortId = #{resortid,jdbcType=INTEGER}
+  </update>
+
+
+
+
+</mapper>

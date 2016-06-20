@@ -1,4 +1,3 @@
-com\wanjia\vo\ResortDestinationVo$DestinationGroup$Destination.class
 com\wanjia\utils\JsonReturnBody.class
 com\wanjia\utils\SmsErrorMessage.class
 com\wanjia\vo\PopularityEntityVo$PopularityShopCollection.class
@@ -8,12 +7,12 @@ com\wanjia\service\impl\PopularityRecommendServiceImpl.class
 com\wanjia\utils\UserReturnJson.class
 com\wanjia\dao\UserInfoMapper.class
 com\wanjia\auth\AuthPassport.class
-com\wanjia\vo\ResortDestinationVo$DestinationGroup.class
 com\wanjia\service\UserService.class
 com\wanjia\entity\ResortInfo.class
 com\wanjia\entity\PopularityRecommendEntity.class
 com\wanjia\entity\UserInfo.class
 com\wanjia\vo\ResortDestinationVo.class
+com\wanjia\vo\ResortDestinationVo$Destination.class
 com\wanjia\utils\RedisClient.class
 com\wanjia\utils\MessageClient.class
 com\wanjia\service\impl\UserServiceImpl.class

@@ -35,26 +35,15 @@ public class ResortServiceImpl implements ResortService {
         String resortDestinationInfos = redisClient.getValueByKey("resortDestination") ;
 
         if(resortDestinationInfos == null || resortDestinationInfos.equals("")){
-
             resortDestinationVo  = new ResortDestinationVo() ;
-            Map<Character,ResortDestinationVo.DestinationGroup> destinationGroupMap = new HashMap<Character,ResortDestinationVo.DestinationGroup>() ;
-
             List<ResortInfo> names = resortInfoMapper.getAllResortNameAndPinYin();
             if(names.size() > 0){
                 for (ResortInfo info : names){
-                    ResortDestinationVo.DestinationGroup  destinationGroup =  destinationGroupMap.get(info.getResortpinyin().charAt(0)) ;
-                    if(destinationGroup == null){
-                        destinationGroup = resortDestinationVo.new DestinationGroup() ;
-                        destinationGroup.setGroup(info.getResortpinyin().charAt(0));
-                        resortDestinationVo.addDestinationGroup(destinationGroup);
-                        destinationGroupMap.put(info.getResortpinyin().charAt(0),destinationGroup) ;
-
-                    }
-                    ResortDestinationVo.DestinationGroup.Destination destination = destinationGroup.new Destination() ;
+                    ResortDestinationVo.Destination destination = resortDestinationVo.new Destination() ;
                     destination.setName(info.getResortname());
                     destination.setPinYin(info.getResortpinyin());
                     destination.setBriefPinYin(PinyinHelper.getShortPinyin(info.getResortname()));
-                    destinationGroup.addDestination(destination);
+                    resortDestinationVo.addDestination(destination);
                 }
             }
 
@@ -67,7 +56,21 @@ public class ResortServiceImpl implements ResortService {
     }
 
 
-    public int getResortCount(){
-        return resortInfoMapper.getResortCount() ;
+    @Override
+    public ResortDestinationVo getHotDestination() throws Exception {
+
+        ResortDestinationVo resortDestinationVo = null  ;
+
+        String resortDestinationInfos = redisClient.getValueByKey("hotDestination") ;
+
+        if(resortDestinationInfos == null  || resortDestinationInfos.equals("")){
+            resortDestinationVo = new ResortDestinationVo() ;
+            //todo
+            //check data in dbbase
+        }else{
+            resortDestinationVo =  (ResortDestinationVo)JsonUtil.toObject(resortDestinationInfos,ResortDestinationVo.class) ;
+        }
+
+        return resortDestinationVo;
     }
 }

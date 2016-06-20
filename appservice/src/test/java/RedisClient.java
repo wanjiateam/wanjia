@@ -54,9 +54,17 @@ public class RedisClient {
 
 
 
-
-
         jedis.zadd("popularity",map) ;
+
+    }
+
+    @Test
+    public void setKeyValue(){
+        String key1 = "resortDestination" ;
+        String key2 = "hotDestination";
+        String value = jedis.get(key1) ;
+        jedis.set("hotDestination",value) ;
+
 
     }
 }

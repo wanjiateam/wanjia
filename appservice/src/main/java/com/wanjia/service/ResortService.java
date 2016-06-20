@@ -10,5 +10,5 @@ import java.util.Set;
  */
 public interface ResortService {
      ResortDestinationVo getAllResortNameAndPinYin() throws Exception;
-     int  getResortCount() throws Exception ;
+     ResortDestinationVo getHotDestination() throws Exception;
 }

@@ -34,7 +34,7 @@ public class ResortInfoController {
         jsonReturnBody.setType("getResortNameAndPinYin");
         try {
            ResortDestinationVo resortDestinationVo = resortService.getAllResortNameAndPinYin() ;
-            if(resortDestinationVo.getDestinationGroups().size() != 0 ){
+            if(resortDestinationVo.getDestinations().size() != 0 ){
                 jsonReturnBody.setCode(1);
                 jsonReturnBody.setMessage(resortDestinationVo);
             }else{
@@ -51,26 +51,31 @@ public class ResortInfoController {
         return JsonUtil.toJsonString(jsonReturnBody);
     }
 
-
-    @RequestMapping(value = "count", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "getHotResort", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getResortCount(){
+    public String getHotResort(){
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
-        jsonReturnBody.setType("getResortCount");
+        jsonReturnBody.setType("getHotResort");
         try {
+            ResortDestinationVo hotDestinations = resortService.getHotDestination() ;
+            if(hotDestinations.getDestinations().size() != 0 ){
+                jsonReturnBody.setCode(1);
+                jsonReturnBody.setMessage(hotDestinations);
+            }else{
+                jsonReturnBody.setCode(2);
+                jsonReturnBody.setMessage("get a empty hot resort info");
+            }
 
-            int count =  resortService.getResortCount() ;
-            jsonReturnBody.setCode(1);
-            jsonReturnBody.setMessage(count);
         } catch (Exception e) {
-            logger.error("get resort info error",e);
+            logger.error("get hot resort info error",e);
             jsonReturnBody.setCode(0);
             jsonReturnBody.setMessage(e.getMessage());
         }
 
         return JsonUtil.toJsonString(jsonReturnBody);
     }
+
 
 
 

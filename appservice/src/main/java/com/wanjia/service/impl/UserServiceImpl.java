@@ -12,8 +12,6 @@ import org.springframework.stereotype.Service;
 import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -140,14 +138,14 @@ public class UserServiceImpl implements UserService {
         try {
             if (isUserExist == 0){
                 String verifyCode = generateVerifyCode() ;
-                redisClient.setKeyValue(phoneNumber,verifyCode,expireSeconds);
+                redisClient.setKeyValueWithTimeOut(phoneNumber,verifyCode,expireSeconds);
                 sendFlag = messageClient.sendCode(verifyCode,phoneNumber);
                 sendFlag =1 ;
             }else if(isUserExist == 1){
                 int count =  userInfoMapper.checkIfPhoneNumberExist(phoneNumber);
                 if(count != 0 ){
                     String verifyCode = generateVerifyCode() ;
-                    redisClient.setKeyValue(phoneNumber,verifyCode,expireSeconds);
+                    redisClient.setKeyValueWithTimeOut(phoneNumber,verifyCode,expireSeconds);
                     sendFlag = messageClient.sendCode(verifyCode,phoneNumber);
                     sendFlag =1 ;
                 }else {
@@ -236,7 +234,7 @@ public class UserServiceImpl implements UserService {
             flag = 1 ;
             if(isExist){
                 int seconds = expireDays*24*60*60 ;
-                redisClient.setKeyValue(token,"1",seconds);
+                redisClient.setKeyValueWithTimeOut(token,"1",seconds);
             }
         } catch (Exception e) {
             logger.error("loginByToken error",e);
@@ -247,7 +245,7 @@ public class UserServiceImpl implements UserService {
     public void storeTokenInRedis(String token,String value ,int expireDays){
         int seconds = expireDays*24*60*60 ;
         try {
-            redisClient.setKeyValue(token,value ,seconds);
+            redisClient.setKeyValueWithTimeOut(token,value ,seconds);
         } catch (Exception e) {
            logger.error("set value to redis  error",e);
         }

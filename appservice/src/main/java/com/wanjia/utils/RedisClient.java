@@ -2,6 +2,7 @@ package com.wanjia.utils;
 
 import redis.clients.jedis.Jedis;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -20,8 +21,12 @@ public class RedisClient {
         jedis = new Jedis(redisIp,redisPort);
     }
 
-    public void setKeyValue(String key,String value,int expireSecond){
+    public void setKeyValueWithTimeOut(String key, String value, int expireSecond){
         jedis.setex(key,expireSecond,value) ;
+    }
+
+    public void setKeyValue(String key, String value){
+        jedis.set(key,value) ;
     }
 
     public String getValueByKey(String key){
@@ -35,6 +40,10 @@ public class RedisClient {
 
     public Set<String> getSortedSet(String key){
         return   jedis.zrevrange(key,0,-1) ;
+    }
+
+    public long setSortedSet(String key, Map<String,Double> values){
+        return   jedis.zadd(key,values);
     }
 
 

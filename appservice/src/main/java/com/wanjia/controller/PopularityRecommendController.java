@@ -4,6 +4,7 @@ import com.wanjia.entity.PopularityRecommendEntity;
 import com.wanjia.service.PopularityRecommendService;
 import com.wanjia.utils.JsonReturnBody;
 import com.wanjia.utils.JsonUtil;
+import com.wanjia.vo.PopularityEntityVo;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,7 +12,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hsb11289 on 2016/6/7.
@@ -26,16 +30,38 @@ public class PopularityRecommendController {
 
     @RequestMapping(value = "getPopularList", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getSloganPicUrl(){
+    public String getPopularPicUrl(){
 
+
+        Map<String,List<PopularityRecommendEntity>> container ;
         JsonReturnBody returnBody = new JsonReturnBody() ;
-        List<PopularityRecommendEntity> poppopularity = null;
+        List<PopularityRecommendEntity> popopularity = null;
         try {
-            poppopularity = popularityRecommendService.getPopularityRecommendList();
-            if(poppopularity.size() >0){
+            popopularity = popularityRecommendService.getPopularityRecommendList();
+            if(popopularity.size() >0){
                 returnBody.setCode(1);
                 returnBody.setType("getPopularList");
-                returnBody.setMessage(poppopularity);
+                container = new HashMap<String,List<PopularityRecommendEntity>>() ;
+                for(PopularityRecommendEntity entity :popopularity){
+                    List<PopularityRecommendEntity> shops = container.get(entity.getResortName());
+                    if(shops == null ){
+                        shops = new ArrayList<PopularityRecommendEntity>() ;
+                        container.put(entity.getResortName(),shops) ;
+                    }
+                    shops.add(entity);
+                }
+
+                PopularityEntityVo vo = new PopularityEntityVo();
+
+                for(Map.Entry<String,List<PopularityRecommendEntity>> pentity : container.entrySet() ){
+                    PopularityEntityVo.PopularityShopCollection collection = vo.new PopularityShopCollection();
+                    collection.setResortname(pentity.getKey());
+                    collection.setResortId(pentity.getValue().get(0).getResortId());
+                    collection.setEntitys(pentity.getValue());
+                    vo.addShopCollection(collection);
+                }
+
+                returnBody.setMessage(vo);
             }else{
                 returnBody.setCode(0);
                 returnBody.setType("getPopularList");

@@ -2,6 +2,9 @@ package com.wanjia.utils;
 
 import com.google.gson.Gson;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 public class JsonUtil {
 
@@ -17,6 +20,8 @@ public class JsonUtil {
 
     public static Object toObject(String json, Class clazz){
 
+        Map<String,String> map = new HashMap<String,String>() ;
+        gson.fromJson(json,map.getClass()) ;
         return gson.fromJson(json,clazz) ;
     }
 

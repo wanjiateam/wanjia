@@ -20,6 +20,9 @@ public class PopularityRecommendEntity{
     //图片的url地址用做首页展示
     private String picUrl ;
 
+    private String resortName ;
+    private int resortId ;
+
 
     public int getShopId() {
         return shopId;
@@ -75,5 +78,21 @@ public class PopularityRecommendEntity{
 
     public void setPicUrl(String picUrl) {
         this.picUrl = picUrl;
+    }
+
+    public String getResortName() {
+        return resortName;
+    }
+
+    public void setResortName(String resortName) {
+        this.resortName = resortName;
+    }
+
+    public int getResortId() {
+        return resortId;
+    }
+
+    public void setResortId(int resortId) {
+        this.resortId = resortId;
     }
 }

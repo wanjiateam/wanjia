@@ -5,10 +5,10 @@
 
 <generatorConfiguration>
     <!--导入属性配置 -->
-    <properties resource="mybatis-generator/generator.properties"></properties>
+    <properties resource="generator.properties"></properties>
 
     <!--指定特定数据库的jdbc驱动jar包的位置 -->
-    <classPathEntry location="D:\maven3.3.1\repository\mysql\mysql-connector-java\5.1.39\mysql-connector-java-5.1.39.jar"/>
+    <classPathEntry location="D:\maven3.3\repository\mysql\mysql-connector-java\5.1.39\mysql-connector-java-5.1.39.jar"/>
 
     <context id="default" targetRuntime="MyBatis3" >
 
@@ -49,11 +49,11 @@
         </javaClientGenerator>
 
 
-        <table tableName="wj_user_info" schema="wanjia"  domainObjectName="UserInfo" enableCountByExample="false" enableUpdateByExample="false"
+        <table tableName="wj_resource_travel_resort_info" schema="wanjia"  domainObjectName="ResortInfo" enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false"
                selectByExampleQueryId="false">
 
-            <generatedKey column="uid" sqlStatement="MySql" identity="true"></generatedKey>
+           <!-- <generatedKey column="uid" sqlStatement="MySql" identity="true"></generatedKey>-->
 
         </table>
     </context>

@@ -29,9 +29,18 @@ public class ResortDestinationVo {
 
     public class Destination{
 
+        private long resortid ;
         private  String name ;
         private  String pinYin ;
         private String briefPinYin ;
+
+        public long getResortid() {
+            return resortid;
+        }
+
+        public void setResortid(long resortid) {
+            this.resortid = resortid;
+        }
 
         public String getName() {
             return name;

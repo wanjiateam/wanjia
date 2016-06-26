@@ -18,8 +18,9 @@
   </resultMap>
 
     <resultMap id="resortNameAndPinYinResult" type="com.wanjia.entity.ResortInfo" >
-        <result column="resortname" property="resortname"/>
-        <result column="resortPinYin" property="resortpinyin" />
+
+      <result column="resortid" property="resortid"/>
+      <result column="resortname" property="resortname"/>
     </resultMap>
 
 
@@ -38,7 +39,7 @@
 
   <select id="getAllResortNameAndPinYin" resultMap="resortNameAndPinYinResult">
         select
-        resortName, resortPinYin
+        resortId, resortName
         from wj_resource_travel_resort_info order by resortPinYin
   </select>
 

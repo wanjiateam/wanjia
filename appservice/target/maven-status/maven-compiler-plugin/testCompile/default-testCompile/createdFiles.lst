@@ -1,5 +1,7 @@
 RedisClient.class
+RedisClient$1.class
 J2SETest.class
 UserServiceTest.class
 SMSTest.class
+ElasticSearchClient.class
 SpringTestCase.class

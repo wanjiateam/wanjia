@@ -74,4 +74,12 @@
     </bean>
     <bean id="encoder" class="sun.misc.BASE64Encoder"/>
     <bean id="decoder" class="sun.misc.BASE64Decoder"/>
+
+    <!--elasticsearch连接bean-->
+    <bean id="elasticSearchClient" class="com.wanjia.utils.ElasticSearchClient" scope="singleton">
+        <constructor-arg type="java.lang.String" name="clustername" value="${es.cluster.name}"></constructor-arg>
+        <constructor-arg type="java.lang.String" name="hosts" value="${es.hosts}"></constructor-arg>
+        <constructor-arg type="int" name="port" value="${es.port}"></constructor-arg>
+    </bean>
+
 </beans>

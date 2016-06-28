@@ -1,12 +1,10 @@
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.vo.ResortLandmarkVo;
-import com.wanjia.vo.ShopListVo;
+import com.wanjia.vo.ShopListBaseVo;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
-import org.elasticsearch.action.index.IndexAction;
 import org.elasticsearch.action.index.IndexRequest;
-import org.elasticsearch.action.index.IndexRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -14,7 +12,6 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.elasticsearch.index.engine.Engine;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -23,9 +20,7 @@ import org.elasticsearch.search.sort.SortOrder;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -58,12 +53,12 @@ public class ElasticSearchClient {
     public void addShopListDataToEs(){
 
         Random random  = new Random() ;
-        List<ShopListVo> vos = new ArrayList<ShopListVo>();
+        List<ShopListBaseVo> vos = new ArrayList<ShopListBaseVo>();
         DecimalFormat dcmFmt = new DecimalFormat("0.00");
         BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
 
         for(int i = 1 ; i <= 20 ; i ++){
-            ShopListVo vo = new ShopListVo() ;
+            ShopListBaseVo vo = new ShopListBaseVo() ;
             vo.setResortId(i%3);
             vo.setShopId(i);
             vo.setShopName("店家—"+i);
@@ -117,7 +112,7 @@ public class ElasticSearchClient {
             vo.setL_recommendNum(random.nextInt(3000));
             vo.setLandmarkId(i%3);
             vo.setLiveLowestPrice(100+random.nextInt(200));
-            ShopListVo.Location location = vo.new Location();
+            ShopListBaseVo.Location location = vo.new Location();
 
             double lon = random.nextInt(100) ;
             double lat = random.nextInt(90);

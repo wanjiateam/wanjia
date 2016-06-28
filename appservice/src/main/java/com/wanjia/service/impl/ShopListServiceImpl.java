@@ -4,7 +4,7 @@ import com.wanjia.service.ShopListService;
 import com.wanjia.utils.ElasticSearchClient;
 import com.wanjia.utils.PageResult;
 import com.wanjia.utils.SortField;
-import com.wanjia.vo.ShopListVo;
+import com.wanjia.vo.ShopListBaseVo;
 import org.apache.log4j.Logger;
 import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.unit.DistanceUnit;
@@ -61,7 +61,28 @@ public class ShopListServiceImpl implements ShopListService{
             default: queryBuilder2 = QueryBuilders.matchAllQuery() ;
         }
         try {
-            elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1,queryBuilder2,sortFields,null ,indexName,type,from,pageSize,ShopListVo.class,pageResult);
+            elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1,queryBuilder2,sortFields,null ,indexName,type,from,pageSize,ShopListBaseVo.class,pageResult);
+        } catch (Exception e) {
+            logger.error("get data from es error",e);
+            pageResult.setE(e);
+        }
+
+        return pageResult;
+    }
+
+
+    @Override
+    public PageResult getShopHotelListByResort(String indexName, String type, long resortId, List<SortField> sortFields, int pageSize, int page) {
+        PageResult pageResult = new PageResult();
+        pageResult.setPageNum(page);
+        pageResult.setPageSize(pageSize);
+
+        int from = (page-1)*pageSize ;
+
+        QueryBuilder queryBuilder1 = QueryBuilders.termQuery("resortId",resortId);
+        QueryBuilder queryBuilder2 = QueryBuilders.matchAllQuery() ;
+        try {
+            elasticSearchClient.queryDataFromEs(queryBuilder1,sortFields,null ,indexName,type,from,pageSize,ShopListBaseVo.class,pageResult);
         } catch (Exception e) {
             logger.error("get data from es error",e);
             pageResult.setE(e);
@@ -93,7 +114,7 @@ public class ShopListServiceImpl implements ShopListService{
             default: queryBuilder2 = QueryBuilders.matchAllQuery() ;
         }
         try {
-            elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1, queryBuilder2, sortFields, null ,indexName, type, from, pageSize, ShopListVo.class, pageResult);
+            elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1, queryBuilder2, sortFields, null ,indexName, type, from, pageSize, ShopListBaseVo.class, pageResult);
         } catch (Exception e) {
             logger.error("get data from es error", e);
             pageResult.setE(e);
@@ -142,7 +163,7 @@ public class ShopListServiceImpl implements ShopListService{
        GeoDistanceSortBuilder geoDistanceSortBuilder =  SortBuilders.geoDistanceSort("location").order(SortOrder.ASC).point(lon,lat).unit(DistanceUnit.KILOMETERS) ;
 
         try {
-             elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1,booleanQuery,sortFields,geoDistanceSortBuilder ,indexName,type,from,pageSize,ShopListVo.class,pageResult);
+             elasticSearchClient.queryDataFromEsWithPostFilter(queryBuilder1,booleanQuery,sortFields,geoDistanceSortBuilder ,indexName,type,from,pageSize,ShopListBaseVo.class,pageResult);
         } catch (Exception e) {
             logger.error("get data from es error",e);
             pageResult.setE(e);

@@ -2,7 +2,6 @@ package com.wanjia.service;
 
 import com.wanjia.utils.PageResult;
 import com.wanjia.utils.SortField;
-import com.wanjia.vo.ShopListVo;
 
 import java.util.List;
 
@@ -13,6 +12,7 @@ import java.util.List;
 public interface ShopListService {
 
     public PageResult getShopListByResort(String indexName, String type , long resortId, List<SortField> sortFields, int pageSize, int page, int productType) ;
+    public PageResult getShopHotelListByResort(String indexName, String type , long resortId, List<SortField> sortFields, int pageSize, int page) ;
 
     public PageResult getShopListByLandmark(String indexName, String type , long resortId, List<SortField> sortFields, int pageSize, int page,int productType, int landmarkId) ;
     public PageResult getShopListByDistance(String indexName, String type , long resortId, List<SortField> sortFields, int pageSize, int page,int productType,double lon,double lat) ;

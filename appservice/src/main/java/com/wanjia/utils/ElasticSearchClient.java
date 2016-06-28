@@ -1,6 +1,5 @@
 package com.wanjia.utils;
 
-import org.apache.lucene.queryparser.xml.builders.FilteredQueryBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -9,12 +8,9 @@ import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
-import org.elasticsearch.search.sort.SortBuilders;
-import org.elasticsearch.search.sort.SortOrder;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -40,11 +36,17 @@ public class ElasticSearchClient {
     }
 
 
-    public void queryDataFromEs(QueryBuilder queryBuilder, String sortField, String index, String type, int from, int size, Class clazz,PageResult pageResult) throws Exception{
+    public void queryDataFromEs(QueryBuilder queryBuilder, List<SortField> sortFields,GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz,PageResult pageResult) throws Exception{
 
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(queryBuilder).setFrom(from).setSize(size).addSort(sortField, SortOrder.DESC);
+                .setQuery(queryBuilder).setFrom(from).setSize(size);
 
+        if(geoDistanceSortBuilder != null){
+            searchRequestBuilder.addSort(geoDistanceSortBuilder) ;
+        }
+        for(SortField sortField : sortFields){
+            searchRequestBuilder.addSort(sortField.getField(),sortField.getSortOrder()) ;
+        }
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
         SearchHits searchHits = searchResponse.getHits();

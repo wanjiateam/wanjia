@@ -5,8 +5,6 @@ import com.wanjia.utils.JsonReturnBody;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.utils.PageResult;
 import com.wanjia.utils.SortField;
-import org.elasticsearch.common.unit.DistanceUnit;
-import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -15,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -109,6 +108,68 @@ public class ShopListController {
 
         return JsonUtil.toJsonString(jsonReturnBody);
     }
+
+
+    /**
+     * 获取住的店家列表
+     * @param resortId 景区的id
+     * @param startDate 住店的开始日期
+     * @param endDate 住店的结束日期
+     * @param sort 排序方式 根据不同的产品，排序的编码不同
+     * @param page 当前的页数
+     * @param pageSize 每页显 示多少条数据
+     * @param  sortOrder  排序方式 1 desc 0 asc
+     * @return
+     */
+    @RequestMapping(value = "listHotel", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopHotelListPaging(long resortId, Date startDate, Date endDate , int sort, int sortOrder, int page, int pageSize){
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
+        jsonReturnBody.setType("getShopHotelListPaging");
+
+        String sortField = null ;
+
+            switch (sort) {
+                case 1 : sortField = "recommendNum"; break; //推荐优先
+                case 2 : sortField = "goodCommentNum"; break; //好评优先
+                case 3 : sortField = "cheapestPrice"; break; //好评优先
+            }
+
+        List<SortField> sortFields = new ArrayList<SortField>();
+        if(sortField  != null){
+            SortField sf = new SortField(sortField) ;
+            if(sortOrder==1){
+                sf.setSortOrder(SortOrder.DESC);
+            }else {
+                sf.setSortOrder(SortOrder.ASC);
+            }
+            sortFields.add(sf) ;
+        }
+        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+
+        PageResult pageResult =  shopListService.getShopListByResort(indexName,type,resortId,sortFields,pageSize,page,productType);
+        if(pageResult.getE() != null){
+            jsonReturnBody.setCode(0);
+            jsonReturnBody.setMessage("query es error:"+pageResult.getE().getStackTrace());
+        }else {
+            List results = (List) pageResult.getResult() ;
+            if(results.size() == 0){
+                jsonReturnBody.setCode(2);
+                jsonReturnBody.setMessage("get a empty result in es");
+            }else{
+                jsonReturnBody.setCode(1);
+                jsonReturnBody.setMessage(pageResult);
+            }
+        }
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+
+
+
 
 
     /**

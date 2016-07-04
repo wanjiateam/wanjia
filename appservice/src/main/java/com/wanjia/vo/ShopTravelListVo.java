@@ -8,9 +8,10 @@ public class ShopTravelListVo extends ShopListBaseVo {
     private int travelTicketState ;
     private int travelGuideState ;
     private int travelSpecialState ;
-    private double travelGuideLowesrPrice ;
+    private double travelGuideLowestPrice ;
     private double travelSpecialLowestPrice ;
     private double travelTicketLowestPrice ;
+    private String ticketCheapestDate ;
 
     public int getTravelTicketState() {
         return travelTicketState;
@@ -36,12 +37,12 @@ public class ShopTravelListVo extends ShopListBaseVo {
         this.travelSpecialState = travelSpecialState;
     }
 
-    public double getTravelGuideLowesrPrice() {
-        return travelGuideLowesrPrice;
+    public double getTravelGuideLowestPrice() {
+        return travelGuideLowestPrice;
     }
 
-    public void setTravelGuideLowesrPrice(double travelGuideLowesrPrice) {
-        this.travelGuideLowesrPrice = travelGuideLowesrPrice;
+    public void setTravelGuideLowestPrice(double travelGuideLowestPrice) {
+        this.travelGuideLowestPrice = travelGuideLowestPrice;
     }
 
     public double getTravelSpecialLowestPrice() {
@@ -58,5 +59,13 @@ public class ShopTravelListVo extends ShopListBaseVo {
 
     public void setTravelTicketLowestPrice(double travelTicketLowestPrice) {
         this.travelTicketLowestPrice = travelTicketLowestPrice;
+    }
+
+    public String getTicketCheapestDate() {
+        return ticketCheapestDate;
+    }
+
+    public void setTicketCheapestDate(String ticketCheapestDate) {
+        this.ticketCheapestDate = ticketCheapestDate;
     }
 }

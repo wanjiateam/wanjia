@@ -5,6 +5,7 @@ import com.wanjia.utils.JsonReturnBody;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.utils.PageResult;
 import com.wanjia.utils.SortField;
+import com.wanjia.vo.*;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,99 +26,18 @@ import java.util.List;
 @RequestMapping("/shopList")
 public class ShopListController {
 
-    private String indexName = "shoplist" ;
-    private String type = "shopinfo" ;
+
     @Autowired
     ShopListService shopListService ;
 
-
-    /**
-     *
-     * @param resortId 景区的id
-     * @param productType 产品类型 1住2食3门票4导游5农家自有项目6特产
-     * @param sort 排序方式 根据不同的产品，排序的编码不同
-     * @param page 当前的页数
-     * @param pageSize 每页显 示多少条数据
-     * @param  sortOrder  排序方式 1 desc 0 asc
-     * @return
-     */
-    @RequestMapping(value = "list", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String getShopListPaging(long resortId,int productType,int sort,int sortOrder,int page, int pageSize){
-
-        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
-        jsonReturnBody.setType("getShopListPaging");
-
-        String sortField = null ;
-        switch (productType){
-            //live
-            case 1 : switch (sort){
-                case 1 : sortField = "l_recommendNum"; break; //推荐优先
-                case 2 : sortField = "l_goodCommentNum"; break; //好评优先
-                case 3 : sortField = "liveLowestPrice"; break; //低价优先
-
-            } break ;
-                //food
-            case 2 : switch (sort){
-                case 1 : sortField = "f_recommendNum"; break;//推荐优先
-                case 2 : sortField = "f_goodCommentNum"; break;//好评优先
-                case 3 : sortField = "foodAveragePrice"; break; //按照平均菜价从高到低
-            }break;
-                //travel
-            case 3 :
-            case 4 :
-            case 5 : switch (sort){
-                case 1 : sortField = "t_recommendNum"; break;//推荐优先
-                case 2 : sortField = "t_goodCommentNum"; break;//好评优先
-                case 3 : sortField = "travelTicketLowestPrice"; break; //门票低价优先
-                case 4 : sortField = "travelGuideLowesrPrice"; break; //导游低价优先
-                case 5 : sortField = "travelSpecialLowestPrice"; break;// 农家特色游低价优先
-            } break ;
-                //special food
-            case 6 : switch (sort){
-                case 1 : sortField = "s_recommendNum"; break;
-                case 2 : sortField = "s_goodCommentNum"; break;
-                case 3 : sortField = "specialFoodLowestPrice"; break;
-            } break ;
-        }
-
-        List<SortField> sortFields = new ArrayList<SortField>();
-        if(sortField  != null){
-            SortField sf = new SortField(sortField) ;
-            if(sortOrder==1){
-                sf.setSortOrder(SortOrder.DESC);
-            }else {
-                sf.setSortOrder(SortOrder.ASC);
-            }
-            sortFields.add(sf) ;
-        }
-        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
-
-       PageResult pageResult =  shopListService.getShopListByResort(indexName,type,resortId,sortFields,pageSize,page,productType);
-        if(pageResult.getE() != null){
-            jsonReturnBody.setCode(0);
-            jsonReturnBody.setMessage("query es error:"+pageResult.getE().getStackTrace());
-        }else {
-            List results = (List) pageResult.getResult() ;
-            if(results.size() == 0){
-                jsonReturnBody.setCode(2);
-                jsonReturnBody.setMessage("get a empty result in es");
-            }else{
-                jsonReturnBody.setCode(1);
-                jsonReturnBody.setMessage(pageResult);
-            }
-        }
-
-        return JsonUtil.toJsonString(jsonReturnBody);
-    }
-
-
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd") ;
+    org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(ShopListController.class) ;
     /**
      * 获取住的店家列表
      * @param resortId 景区的id
      * @param startDate 住店的开始日期
      * @param endDate 住店的结束日期
-     * @param sort 排序方式 根据不同的产品，排序的编码不同
+     * @param sort 排序方式 根据不同的产品，排序的编码不同，1 推荐优先 2 好评 3 价格
      * @param page 当前的页数
      * @param pageSize 每页显 示多少条数据
      * @param  sortOrder  排序方式 1 desc 0 asc
@@ -123,20 +45,251 @@ public class ShopListController {
      */
     @RequestMapping(value = "listHotel", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getShopHotelListPaging(long resortId, Date startDate, Date endDate , int sort, int sortOrder, int page, int pageSize){
+    public String getShopHotelListPaging(long resortId, String startDate, String endDate , int sort, int sortOrder, int page, int pageSize,Integer landmarkId,String shopName){
 
+         String indexName = "shop_hotel" ;
+         String type = "hotel" ;
         JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
         jsonReturnBody.setType("getShopHotelListPaging");
 
+        long startDateNumber  =  parseDateToLongValue(startDate,jsonReturnBody);
+        long endDateNumber =  parseDateToLongValue(endDate,jsonReturnBody) ;
+
+        if(jsonReturnBody.getMessage() != null){
+            return JsonUtil.toJsonString(jsonReturnBody);
+        }
+
         String sortField = null ;
 
+        List<SortField> sortFields = new ArrayList<SortField>();
+        if(sort != 3){
             switch (sort) {
                 case 1 : sortField = "recommendNum"; break; //推荐优先
                 case 2 : sortField = "goodCommentNum"; break; //好评优先
-                case 3 : sortField = "cheapestPrice"; break; //好评优先
             }
+        }else{
+            sortField = "roomPrice" ;
+        }
+
+        generateSortField(sortField,sortOrder,sortFields);
+
+        PageResult pageResult = null ;
+        if(sort != 3){
+            sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+            pageResult = shopListService.getShopHotelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopHotelListVo.class,landmarkId,shopName) ;
+        }else{
+            indexName = "shop_hotel_price";
+            type = "price";
+            pageResult = shopListService.getShopHotelListPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page,HotelPriceVo.class ,landmarkId,shopName) ;
+        }
+
+        parsePageResult(pageResult,jsonReturnBody);
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+    /**
+     * 获取提供餐饮服务的店家
+     * @param resortId
+     * @param startDate
+     * @param endDate
+     * @param sort
+     * @param sortOrder
+     * @param page
+     * @param pageSize
+     * @param landmarkId
+     * @param shopName
+     * @return
+     */
+    @RequestMapping(value = "listRestaurant", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopRestaurantListPaging(long resortId, String startDate, String endDate , int sort, int sortOrder, int page, int pageSize,Integer landmarkId,String shopName){
+
+        String indexName = "shop_restaurant" ;
+        String type = "restaurant" ;
+        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
+        jsonReturnBody.setType("getShopRestaurantListPaging");
+
+        long startDateNumber =  parseDateToLongValue(startDate,jsonReturnBody);
+        long endDateNumber =  parseDateToLongValue(endDate,jsonReturnBody) ;
+
+        if(jsonReturnBody.getMessage() != null){
+            return JsonUtil.toJsonString(jsonReturnBody);
+        }
+
+        String sortField = null ;
 
         List<SortField> sortFields = new ArrayList<SortField>();
+        switch (sort) {
+            case 1 : sortField = "recommendNum"; break; //推荐优先
+            case 2 : sortField = "goodCommentNum"; break; //好评优先
+            case 3 : sortField = "foodAveragePrice"; break;
+        }
+
+       generateSortField(sortField,sortOrder,sortFields);
+
+        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+        PageResult pageResult = shopListService.getShopListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page,ShopRestaurantListVo.class,landmarkId,shopName) ;
+        parsePageResult(pageResult,jsonReturnBody);
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+    /**
+     * 获取提供特产服务店家列表
+     * @param resortId
+     * @param startDate
+     * @param endDate
+     * @param sort
+     * @param sortOrder
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    @RequestMapping(value = "listSpecialty", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopSpecialityListPaging(long resortId, String startDate, String endDate , int sort, int sortOrder, int page, int pageSize,Integer landmarkId,String shopName){
+
+        String indexName = "shop_specialty" ;
+        String type = "specialty" ;
+        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
+        jsonReturnBody.setType("getShopSpecialityListPaging");
+
+        long startDateNumber =  parseDateToLongValue(startDate,jsonReturnBody);
+        long endDateNumber =  parseDateToLongValue(endDate,jsonReturnBody) ;
+
+        if(jsonReturnBody.getMessage() != null){
+            return JsonUtil.toJsonString(jsonReturnBody);
+        }
+
+        String sortField = null ;
+
+        List<SortField> sortFields = new ArrayList<SortField>();
+        switch (sort) {
+            case 1 : sortField = "recommendNum"; break; //推荐优先
+            case 2 : sortField = "goodCommentNum"; break; //好评优先
+            case 3 : sortField = "specialtyLowestPrice"; break;
+        }
+
+        generateSortField(sortField,sortOrder,sortFields);
+
+        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+        PageResult pageResult = shopListService.getShopListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopSpecialtyListVo.class,landmarkId,shopName) ;
+
+        parsePageResult(pageResult,jsonReturnBody);
+
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+    /**
+     * 获取提供游玩服务店家列表
+     * @param resortId
+     * @param startDate
+     * @param endDate
+     * @param sort
+     * @param sortOrder
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    @RequestMapping(value = "listTravel", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopTravelListPaging(long resortId, String startDate, String endDate , int sort, int sortOrder, int page, int pageSize,Integer landmarkId,String shopName){
+
+        String indexName = "shop_travel" ;
+        String type = "travel" ;
+        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
+        jsonReturnBody.setType("getShopTravelListPaging");
+
+        long startDateNumber =  parseDateToLongValue(startDate,jsonReturnBody);
+        long endDateNumber =  parseDateToLongValue(endDate,jsonReturnBody) ;
+
+        if(jsonReturnBody.getMessage() != null){
+            return JsonUtil.toJsonString(jsonReturnBody);
+        }
+
+        String sortField = null ;
+        String travelStateField = null;
+        List<SortField> sortFields = new ArrayList<SortField>();
+        switch (sort) {
+            case 1 : sortField = "recommendNum"; break; //推荐优先
+            case 2 : sortField = "goodCommentNum"; break; //好评优先
+            case 3 : sortField = "price" ;  break; //门票低价优先
+            case 4 : sortField = "travelGuideLowestPrice"; travelStateField= "travelGuideState";break;//导游低价优先
+            case 5 : sortField = "travelSpecialLowestPrice"; travelStateField= "travelSpecialState"; break;//农家特色游低价优先
+
+        }
+        if(travelStateField != null){
+            SortField sf = new SortField(travelStateField) ;
+            sf.setSortOrder(SortOrder.DESC);
+            sortFields.add(sf) ;
+        }
+
+        generateSortField(sortField,sortOrder,sortFields);
+
+
+        PageResult pageResult = null ;
+        if(sort != 3){
+            sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+            pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
+        }else{
+            indexName = "shop_travel_ticketprice";
+            type = "price";
+            pageResult = shopListService.getShopTravelListTicketPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, TicketPriceVo.class ,landmarkId,shopName) ;
+        }
+
+
+        parsePageResult(pageResult,jsonReturnBody);
+
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+    /**
+     *根据经纬度查询用户的附近的店家
+     * @param resortId
+     * @param productType 1住2食3游4特产
+     * @param page
+     * @param pageSize
+     * @param lon
+     * @param lat
+     * @return
+     */
+    @RequestMapping(value = "listByDistance", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopListPagingByDistance(long resortId,int productType,int page, int pageSize,double lon, double lat){
+
+        String indexName = "" ;
+        String type = "" ;
+
+        switch(productType){
+            case 1 : indexName="shop_hotel";type = "hotel" ;break;
+            case 2 : indexName="shop_restaurant";type = "restaurant" ;break;
+            case 3 : indexName="shop_travel";type = "travel" ;break;
+            case 4 : indexName="shop_specialty";type = "specialty" ;break;
+        }
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
+        jsonReturnBody.setType("getShopListPagingByDistance");
+
+        List<SortField> sortFields = new ArrayList<SortField>();
+        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+
+        PageResult pageResult = shopListService.getShopListByDistance(indexName,type,resortId,sortFields,pageSize,page,productType,lon,lat);
+        parsePageResult(pageResult,jsonReturnBody);
+
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+    //包装排序字段类
+    private void generateSortField(String sortField,int sortOrder ,List<SortField> sortFields){
+
         if(sortField  != null){
             SortField sf = new SortField(sortField) ;
             if(sortOrder==1){
@@ -146,9 +299,25 @@ public class ShopListController {
             }
             sortFields.add(sf) ;
         }
-        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+    }
 
-        PageResult pageResult =  shopListService.getShopListByResort(indexName,type,resortId,sortFields,pageSize,page,productType);
+    //解析日期字符串 为时间戳
+    private long parseDateToLongValue(String date,JsonReturnBody jsonReturnBody) {
+
+        long value = 0;
+        try {
+            value = sdf.parse(date).getTime();
+        } catch (ParseException e) {
+            logger.error("paramter error",e);
+            jsonReturnBody.setCode(-1);
+            jsonReturnBody.setMessage("parameter type error");
+        }
+        return  value;
+    }
+
+    //解析pageResult code=0 查询es异常 code=1 正常返回 code=2 结果为空
+    private void parsePageResult(PageResult pageResult ,JsonReturnBody jsonReturnBody){
+
         if(pageResult.getE() != null){
             jsonReturnBody.setCode(0);
             jsonReturnBody.setMessage("query es error:"+pageResult.getE().getStackTrace());
@@ -163,79 +332,6 @@ public class ShopListController {
             }
         }
 
-        return JsonUtil.toJsonString(jsonReturnBody);
     }
-
-
-
-
-
-
-
-    /**
-     * 按照地标展示店家列表
-     * @param resortId
-     * @param productType
-     * @param landmarkId 地标id
-     * @param page
-     * @param pageSize
-     * @return
-     */
-    @RequestMapping(value = "listBylandmark", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String getShopListPagingByLandmark(long resortId,int productType,int landmarkId,int page, int pageSize){
-
-
-        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
-        jsonReturnBody.setType("getShopListPagingByLandmark");
-
-        List<SortField> sortFields = new ArrayList<SortField>();
-        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
-        PageResult pageResult = shopListService.getShopListByLandmark(indexName,type,resortId,sortFields,pageSize,page,productType,landmarkId);
-        if(pageResult.getE() != null){
-            jsonReturnBody.setCode(0);
-            jsonReturnBody.setMessage("query es error:"+pageResult.getE().getStackTrace());
-        }else {
-            List results = (List) pageResult.getResult() ;
-            if(results.size() == 0){
-                jsonReturnBody.setCode(2);
-                jsonReturnBody.setMessage("get a empty result in es");
-            }else{
-                jsonReturnBody.setCode(1);
-                jsonReturnBody.setMessage(pageResult);
-            }
-        }
-        return JsonUtil.toJsonString(jsonReturnBody);
-    }
-
-
-
-    @RequestMapping(value = "listByDistance", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String getShopListPagingByDistance(long resortId,int productType,int page, int pageSize,double lon, double lat){
-
-        JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
-        jsonReturnBody.setType("getShopListPagingByDistance");
-
-        List<SortField> sortFields = new ArrayList<SortField>();
-        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
-        PageResult pageResult = shopListService.getShopListByDistance(indexName,type,resortId,sortFields,pageSize,page,productType,lon,lat);
-        if(pageResult.getE() != null){
-            jsonReturnBody.setCode(0);
-            jsonReturnBody.setMessage("query es error:"+pageResult.getE().getStackTrace());
-        }else {
-            List results = (List) pageResult.getResult() ;
-            if(results.size() == 0){
-                jsonReturnBody.setCode(2);
-                jsonReturnBody.setMessage("get a empty result in es");
-            }else{
-                jsonReturnBody.setCode(1);
-                jsonReturnBody.setMessage(pageResult);
-            }
-        }
-        return JsonUtil.toJsonString(jsonReturnBody);
-    }
-
-
 
 }

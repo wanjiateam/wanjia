@@ -5,6 +5,7 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.collect.HppcMaps;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
@@ -36,46 +37,47 @@ public class ElasticSearchClient {
     }
 
 
-    public void queryDataFromEs(QueryBuilder queryBuilder, List<SortField> sortFields,GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz,PageResult pageResult) throws Exception{
+    public List<Object> queryDataFromEsWithoutPaging(QueryBuilder queryBuilder, QueryBuilder postFilter,  String index, String type, Class clazz) throws Exception{
 
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(queryBuilder).setFrom(from).setSize(size);
+                .setQuery(queryBuilder).setFrom(0).setSize(10000);//max_result_window
 
-        if(geoDistanceSortBuilder != null){
-            searchRequestBuilder.addSort(geoDistanceSortBuilder) ;
+        if(postFilter != null ){
+            searchRequestBuilder.setPostFilter(postFilter) ;
         }
-        for(SortField sortField : sortFields){
-            searchRequestBuilder.addSort(sortField.getField(),sortField.getSortOrder()) ;
-        }
+
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
 
         SearchHits searchHits = searchResponse.getHits();
         long totalHits = searchHits.totalHits();
-        pageResult.setTotalNumber(totalHits);
-
         List objectList = new ArrayList() ;
         if (totalHits > 0) {
-            SearchHit[] hits = searchHits.getHits();
-            for (SearchHit hit : hits) {
-               Object obj =  JsonUtil.toObject(hit.getSourceAsString(),clazz);
-                objectList.add(obj) ;
-            }
+            convertJsonToObject(searchHits,clazz,objectList);
         }
 
-        pageResult.setResult(objectList);
+        return objectList ;
 
     }
+
+
 
     public void queryDataFromEsWithPostFilter(QueryBuilder queryBuilder, QueryBuilder postFilter, List<SortField> sortFields, GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz, PageResult pageResult) throws Exception{
 
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
-                .setQuery(queryBuilder).setPostFilter(postFilter).setFrom(from).setSize(size);
+                .setQuery(queryBuilder).setFrom(from).setSize(size);
+
+        if(postFilter != null){
+            searchRequestBuilder.setPostFilter(postFilter) ;
+        }
 
         if(geoDistanceSortBuilder != null){
             searchRequestBuilder.addSort(geoDistanceSortBuilder) ;
         }
-        for(SortField sortField : sortFields){
-            searchRequestBuilder.addSort(sortField.getField(),sortField.getSortOrder()) ;
+
+        if(sortFields != null){
+            for(SortField sortField : sortFields){
+                searchRequestBuilder.addSort(sortField.getField(),sortField.getSortOrder()) ;
+            }
         }
 
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
@@ -86,13 +88,18 @@ public class ElasticSearchClient {
 
         List objectList = new ArrayList() ;
         if (totalHits > 0) {
-            SearchHit[] hits = searchHits.getHits();
-            for (SearchHit hit : hits) {
-                Object obj =  JsonUtil.toObject(hit.getSourceAsString(),clazz);
-                objectList.add(obj) ;
-            }
+            convertJsonToObject(searchHits,clazz,objectList);
         }
         pageResult.setResult(objectList);
+    }
+
+    private void convertJsonToObject(SearchHits searchHits,Class clazz,List<Object> results){
+        SearchHit[] hits = searchHits.getHits();
+        for (SearchHit hit : hits) {
+            Object obj =  JsonUtil.toObject(hit.getSourceAsString(),clazz);
+            results.add(obj) ;
+        }
+
     }
 
 

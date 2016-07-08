@@ -1,5 +1,7 @@
 package com.wanjia.utils;
 
+import com.wanjia.vo.ESAggResultVo;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -11,6 +13,10 @@ import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 
 import java.net.InetSocketAddress;
@@ -61,7 +67,7 @@ public class ElasticSearchClient {
 
 
 
-    public void queryDataFromEsWithPostFilter(QueryBuilder queryBuilder, QueryBuilder postFilter, List<SortField> sortFields, GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz, PageResult pageResult) throws Exception{
+    public void queryDataFromEsWithPostFilter(QueryBuilder queryBuilder, QueryBuilder postFilter , List<SortField> sortFields, GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz, PageResult pageResult) throws Exception{
 
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(queryBuilder).setFrom(from).setSize(size);
@@ -84,12 +90,53 @@ public class ElasticSearchClient {
 
         SearchHits searchHits = searchResponse.getHits();
         long totalHits = searchHits.totalHits();
-        pageResult.setTotalNumber(totalHits);
+        if(pageResult.getTotalNumber() == 0){
+            pageResult.setTotalNumber(totalHits);
+        }
 
         List objectList = new ArrayList() ;
         if (totalHits > 0) {
             convertJsonToObject(searchHits,clazz,objectList);
         }
+        pageResult.setResult(objectList);
+    }
+
+
+    public void queryDataFromEsWithPostFilterAndAggregation(QueryBuilder queryBuilder, QueryBuilder postFilter, AggregationBuilder aggregationBuilder,String groupName,String subAggName,
+                                                            String aggType , String index, String type, int from, int size, PageResult pageResult) throws Exception{
+
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(queryBuilder).setFrom(from).setSize(size);
+
+        if(postFilter != null){
+            searchRequestBuilder.setPostFilter(postFilter) ;
+        }
+
+        if(aggregationBuilder != null ){
+            searchRequestBuilder.addAggregation(aggregationBuilder) ;
+        }
+
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+
+        List objectList = new ArrayList() ;
+
+        Terms agg =  searchResponse.getAggregations().get(groupName) ;
+        for (Terms.Bucket entry : agg.getBuckets()) {
+            ESAggResultVo vo = new ESAggResultVo() ;
+            String key = entry.getKey().toString();// bucket key
+            vo.setKey(key);
+            long docCount = entry.getDocCount();
+            vo.setCount(docCount);  // Doc count
+            ESAggResultVo subVo = new ESAggResultVo() ;
+            if(aggType.equals("sum")){
+                Sum sum  = entry.getAggregations().get("sum_price");
+                subVo.setKey("sumVo");
+                subVo.setCount(sum.getValue());
+            }
+            vo.setVo(subVo);
+            objectList.add(vo) ;
+        }
+
         pageResult.setResult(objectList);
     }
 
@@ -101,6 +148,7 @@ public class ElasticSearchClient {
         }
 
     }
+
 
 
 }

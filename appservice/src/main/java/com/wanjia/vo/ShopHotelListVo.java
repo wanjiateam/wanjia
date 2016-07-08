@@ -5,13 +5,12 @@ import java.util.Date;
 /**
  * Created by hsb11289 on 2016/6/28.
  */
-public class ShopHotelListVo extends ShopListBaseVo {
+public class ShopHotelListVo extends ShopListBaseVo implements Comparable<ShopHotelListVo> {
 
     private long roomId ;
 
     private double cheapestPrice ;
 
-    private String cheapestDate ;
 
     public long getRoomId() {
         return roomId;
@@ -29,11 +28,15 @@ public class ShopHotelListVo extends ShopListBaseVo {
         this.cheapestPrice = cheapestPrice;
     }
 
-    public String getCheapestDate() {
-        return cheapestDate;
-    }
-
-    public void setCheapestDate(String cheapestDate) {
-        this.cheapestDate = cheapestDate;
+    @Override
+    public int compareTo(ShopHotelListVo o) {
+        double result = o.getCheapestPrice() - this.cheapestPrice ;
+        if(result >0){
+            return -1 ;
+        }else if(result <0){
+            return 1 ;
+        }else {
+            return 0 ;
+        }
     }
 }

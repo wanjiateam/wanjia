@@ -1,4 +1,5 @@
 import org.joda.time.DateTime;
+import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Test;
 import sun.misc.BASE64Decoder;
@@ -6,9 +7,7 @@ import sun.misc.BASE64Encoder;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Random;
+import java.util.*;
 
 /**
  * Created by hsb11289 on 2016/5/25.
@@ -63,13 +62,37 @@ public class J2SETest {
     @Test
     public void testJodaDate(){
         DateTime dateTime = new DateTime() ;
-
+       // DateTime dateTime1 = new DateTime(11111111);
+        dateTime = dateTime.plusDays(3);
         long value = dateTime.getMillis() ;
         System.out.println(value+"---"+dateTime.toString("yyyy-MM-dd"));
         DateTime value2 = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime.toString("yyyy-MM-dd"));
         System.out.println(value2.getMillis());
 
+       //Days  days = Days.daysBetween(dateTime1,dateTime) ;
+        //System.out.println(days.getDays());
+
     }
 
+    @Test
+    public  void testMap(){
+
+        Map<Long,Double> map = new HashMap<Long,Double>();
+        Double value =  map.get(11) ;
+
+        //System.out.println(value);
+
+    }
+    @Test
+    public  void testMath(){
+
+
+        double a =   50 ;
+        System.out.println(a/3);
+        System.out.println(Math.ceil(a/3)) ;
+
+        //System.out.println(value);
+
+    }
 
 }

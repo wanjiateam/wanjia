@@ -3,7 +3,7 @@ package com.wanjia.vo;
 /**
  * Created by hsb11289 on 2016/6/28.
  */
-public class ShopTravelListVo extends ShopListBaseVo {
+public class ShopTravelListVo extends ShopListBaseVo implements  Comparable<ShopTravelListVo>{
 
     private int travelTicketState ;
     private int travelGuideState ;
@@ -67,5 +67,17 @@ public class ShopTravelListVo extends ShopListBaseVo {
 
     public void setTicketCheapestDate(String ticketCheapestDate) {
         this.ticketCheapestDate = ticketCheapestDate;
+    }
+
+    @Override
+    public int compareTo(ShopTravelListVo o) {
+        double value = o.getTravelTicketLowestPrice() - this.getTravelTicketLowestPrice() ;
+        if(value > 0 ){
+            return -1 ;
+        }else if(value < 0){
+            return 1 ;
+        }else{
+           return 0;
+        }
     }
 }

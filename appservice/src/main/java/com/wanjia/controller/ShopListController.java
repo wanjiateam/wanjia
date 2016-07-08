@@ -78,7 +78,7 @@ public class ShopListController {
             sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
             pageResult = shopListService.getShopHotelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopHotelListVo.class,landmarkId,shopName) ;
         }else{
-            indexName = "shop_hotel_price";
+            indexName = "shop_hotel_lowestprice";
             type = "price";
             pageResult = shopListService.getShopHotelListPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page,HotelPriceVo.class ,landmarkId,shopName) ;
         }
@@ -237,7 +237,7 @@ public class ShopListController {
             sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
             pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
         }else{
-            indexName = "shop_travel_ticketprice";
+            indexName = "shop_travel_ticketlowestprice";
             type = "price";
             pageResult = shopListService.getShopTravelListTicketPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, TicketPriceVo.class ,landmarkId,shopName) ;
         }

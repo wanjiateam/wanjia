@@ -1,9 +1,17 @@
 import com.sun.org.apache.xml.internal.dtm.ref.DTMNamedNodeMap;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.vo.*;
+import org.apache.lucene.index.SegmentInfos;
+import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
+import org.apache.lucene.queryparser.xml.builders.RangeFilterBuilder;
+import org.apache.lucene.queryparser.xml.builders.RangeQueryBuilder;
+import org.apache.lucene.search.SearcherManager;
 import org.elasticsearch.action.bulk.BulkItemResponse;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.bulk.BulkResponse;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
+import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -12,17 +20,29 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.index.deletionpolicy.SnapshotIndexCommit;
 import org.elasticsearch.index.engine.Engine;
+import org.elasticsearch.index.engine.EngineException;
+import org.elasticsearch.index.engine.Segment;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.translog.Translog;
+import org.elasticsearch.plugin.deletebyquery.DeleteByQueryPlugin;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilder;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.bucket.terms.Terms;
+import org.elasticsearch.search.aggregations.metrics.sum.Sum;
 import org.elasticsearch.search.sort.SortOrder;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
@@ -40,7 +60,7 @@ public class ElasticSearchClient {
     @Before
     public void initESClient() {
         try {
-            client = TransportClient.builder().settings(settings).build().addTransportAddress(
+            client = TransportClient.builder().settings(settings).addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(
                     new InetSocketTransportAddress(new InetSocketAddress("112.124.15.101",9300)))
                     .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.49.117",9300)))
                     .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.39.68",9300))) ;
@@ -64,7 +84,7 @@ public class ElasticSearchClient {
             vo.setResortId(1);
             vo.setShopId(i);
             vo.setShopName("店家-"+i);
-            vo.setRoomId(i);
+           // vo.setRoomId(random.nextInt(3));
             vo.setAddressProvince("安徽");
             vo.setAddressCity("池州");
             vo.setAddressDistinct("九华山");
@@ -123,17 +143,21 @@ public class ElasticSearchClient {
                 dateTime = dateTime.plusDays(1) ;
                 String dateTime1Str = dateTime.toString("yyyy-MM-dd");
                 long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis() ;
-                HotelPriceVo vo = new HotelPriceVo();
-                vo.setRoomId(i);
-                vo.setShopId(i);
-                vo.setLandmarkId(i%4);
-                vo.setShopName("店家-"+i);
-                vo.setPriceDate(dateTime1Str);
-                vo.setPriceDateLongValue(timevalue);
-                vo.setResortId(1);
-                vo.setRoomPrice(random.nextInt(500));
-                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_hotel_price").setType("price").setId(String.valueOf(id++)).setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
-                vos.add(vo);
+                for(int k=1;k<=3 ;k++){
+                    HotelPriceVo vo = new HotelPriceVo();
+                    vo.setRoomId(k-1);
+                    //vo.setRoomId(random.nextInt(3));
+                    vo.setShopId(i);
+                    vo.setLandmarkId(i%4);
+                    vo.setShopName("店家-"+i);
+                    vo.setPriceDate(dateTime1Str);
+                    vo.setPriceDateLongValue(timevalue);
+                    vo.setResortId(1);
+                    vo.setRoomPrice(random.nextInt(500));
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_hotel_price").setType("price").setId(String.valueOf(id++)).setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                    vos.add(vo);
+                }
+
             }
 
         }
@@ -344,17 +368,20 @@ public class ElasticSearchClient {
                 dateTime = dateTime.plusDays(1) ;
                 String dateTime1Str = dateTime.toString("yyyy-MM-dd");
                 long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis() ;
-                TicketPriceVo vo = new TicketPriceVo();
-                vo.setTicketId(i);
-                vo.setPriceDate(dateTime1Str);
-                vo.setPriceDateLongValue(timevalue);
-                vo.setResortId(1);
-                vo.setShopId(i);
-                vo.setLandmarkId(i%4);
-                vo.setShopName("店家-"+i);
-                vo.setPrice(random.nextInt(500));
-                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticketprice").setType("price").setId(String.valueOf(id++)).setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
-                vos.add(vo);
+                for(int k=1 ;k<=3;k++){
+                    TicketPriceVo vo = new TicketPriceVo();
+                    vo.setTicketId(random.nextInt(3));
+                    vo.setPriceDate(dateTime1Str);
+                    vo.setPriceDateLongValue(timevalue);
+                    vo.setResortId(1);
+                    vo.setShopId(i);
+                    vo.setLandmarkId(i%4);
+                    vo.setShopName("店家-"+i);
+                    vo.setPrice(random.nextInt(500));
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticketprice").setType("price").setId(String.valueOf(id++)).setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                    vos.add(vo);
+                }
+
             }
 
         }
@@ -409,6 +436,14 @@ public class ElasticSearchClient {
 
     @Test
     public void deleteByQuery(){
+        String indexname = "shop_hotel_lowestprice";
+        String type = "price" ;
+        DeleteByQueryResponse rsp = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE)
+                .setIndices(indexname)
+                .setTypes(type)
+                .setQuery(QueryBuilders.matchAllQuery())
+                .execute()
+                .actionGet();
     }
 
     @Test
@@ -428,6 +463,54 @@ public class ElasticSearchClient {
             for (SearchHit hit :hits){
                // System.out.println(hit.getScore());
                System.out.println(hit.getSourceAsString()) ;
+            }
+        }
+
+
+    }
+
+
+    @Test
+    public void testAggQuery(){
+
+        BoolQueryBuilder booleanQueryBuilder = QueryBuilders.boolQuery() ;
+        QueryBuilder queryBuilder =  QueryBuilders.termQuery("resortId",1);
+        booleanQueryBuilder.must(queryBuilder) ;
+        org.elasticsearch.index.query.RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("priceDateLongValue").gte(1467648000000l).lt(1467907200000l);
+        booleanQueryBuilder.must(rangeQueryBuilder) ;
+
+
+        int page  = 2 ;
+        int pageSize = 10 ;
+
+       AggregationBuilder  aggregationBuilder =  AggregationBuilders.terms("shopGroup").field("shopId").size(pageSize*page).order(Terms.Order.aggregation("sum_price",true))
+                .subAggregation(AggregationBuilders.sum("sum_price").field("roomPrice")) ;
+
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch("shop_hotel_price").setTypes("price").setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(booleanQueryBuilder).setFrom(0).setSize(0).addAggregation(aggregationBuilder) ;
+
+        SearchResponse searchResponse =  searchRequestBuilder.execute().actionGet() ;
+
+        Terms agg = searchResponse.getAggregations().get("shopGroup") ;
+
+        // For each entry
+        for (Terms.Bucket entry : agg.getBuckets()) {
+            String key = entry.getKey().toString();                    // bucket key
+            long docCount = entry.getDocCount();            // Doc count
+            System.out.println("key is =="+key+"----docCount is ---"+docCount);
+            // We ask for top_hits for each bucket
+            Sum sum  = entry.getAggregations().get("sum_price");
+            System.out.println(sum.getValue());
+        }
+
+        SearchHits searchHits = searchResponse.getHits();
+        long totalHits = searchHits.totalHits() ;
+
+        if(totalHits >0){
+            SearchHit[] hits = searchHits.getHits() ;
+            for (SearchHit hit :hits){
+                // System.out.println(hit.getScore());
+                System.out.println(hit.getSourceAsString()) ;
             }
         }
 

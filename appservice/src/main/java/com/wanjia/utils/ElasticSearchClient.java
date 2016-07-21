@@ -43,13 +43,25 @@ public class ElasticSearchClient {
     }
 
 
-    public List<Object> queryDataFromEsWithoutPaging(QueryBuilder queryBuilder, QueryBuilder postFilter,  String index, String type, Class clazz) throws Exception{
+    public List queryDataFromEsWithoutPaging(QueryBuilder queryBuilder, QueryBuilder postFilter,  String index, String type, Class clazz) throws Exception{
+
+        return this.queryDataFromEsWithoutPaging(queryBuilder, postFilter, index,type,clazz,null) ;
+
+    }
+
+
+    public List queryDataFromEsWithoutPaging(QueryBuilder queryBuilder, QueryBuilder postFilter,  String index, String type, Class clazz,List<SortField>  sortFields) throws Exception{
 
         SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
                 .setQuery(queryBuilder).setFrom(0).setSize(10000);//max_result_window
 
         if(postFilter != null ){
             searchRequestBuilder.setPostFilter(postFilter) ;
+        }
+        if(sortFields != null && sortFields.size() >0){
+            for(SortField sortField : sortFields){
+                searchRequestBuilder.addSort(sortField.getField(),sortField.getSortOrder());
+            }
         }
 
         SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
@@ -64,7 +76,6 @@ public class ElasticSearchClient {
         return objectList ;
 
     }
-
 
 
     public void queryDataFromEsWithPostFilter(QueryBuilder queryBuilder, QueryBuilder postFilter , List<SortField> sortFields, GeoDistanceSortBuilder geoDistanceSortBuilder , String index, String type, int from, int size, Class clazz, PageResult pageResult) throws Exception{

@@ -10,6 +10,7 @@ public class ShopProductLogoVo {
     private String picName ;
     private String picUrl ;
     private String picDescribe ;
+    private int  sort ;
 
     public long getShopId() {
         return shopId;
@@ -43,11 +44,19 @@ public class ShopProductLogoVo {
         this.picUrl = picUrl;
     }
 
-    public String getPicDescrible() {
+    public String getPicDescribe() {
         return picDescribe;
     }
 
-    public void setPicDescrible(String picDescribe) {
+    public void setPicDescribe(String picDescribe) {
         this.picDescribe = picDescribe;
+    }
+
+    public int getSort() {
+        return sort;
+    }
+
+    public void setSort(int sort) {
+        this.sort = sort;
     }
 }

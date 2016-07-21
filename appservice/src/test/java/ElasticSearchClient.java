@@ -1,6 +1,14 @@
 import com.sun.org.apache.xml.internal.dtm.ref.DTMNamedNodeMap;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.vo.*;
+import com.wanjia.vo.live.RoomBookVo;
+import com.wanjia.vo.live.RoomVo;
+import com.wanjia.vo.restaurant.CourseBookVo;
+import com.wanjia.vo.restaurant.CourseVo;
+import com.wanjia.vo.speciality.SpecialtyVo;
+import com.wanjia.vo.travel.FamilyActivityVo;
+import com.wanjia.vo.travel.GuideVo;
+import com.wanjia.vo.travel.TicketVo;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.apache.lucene.queryparser.xml.builders.RangeFilterBuilder;
@@ -60,7 +68,12 @@ public class ElasticSearchClient {
     @Before
     public void initESClient() {
         try {
-            client = TransportClient.builder().settings(settings).addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(
+          /*  client = TransportClient.builder().settings(settings).addPlugin(DeleteByQueryPlugin.class).build().addTransportAddress(
+                    new InetSocketTransportAddress(new InetSocketAddress("112.124.15.101",9300)))
+                    .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.49.117",9300)))
+                    .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.39.68",9300))) ;*/
+
+            client = TransportClient.builder().settings(settings).build().addTransportAddress(
                     new InetSocketTransportAddress(new InetSocketAddress("112.124.15.101",9300)))
                     .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.49.117",9300)))
                     .addTransportAddress(new InetSocketTransportAddress(new InetSocketAddress("112.124.39.68",9300))) ;
@@ -436,8 +449,8 @@ public class ElasticSearchClient {
 
     @Test
     public void deleteByQuery(){
-        String indexname = "shop_hotel_lowestprice";
-        String type = "price" ;
+        String indexname = "shop_logo";
+        String type = "logo" ;
         DeleteByQueryResponse rsp = new DeleteByQueryRequestBuilder(client, DeleteByQueryAction.INSTANCE)
                 .setIndices(indexname)
                 .setTypes(type)
@@ -517,6 +530,331 @@ public class ElasticSearchClient {
 
     }
 
+
+    @Test
+    public void addShopProductLogo(){
+
+         BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+         int id = 201 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=5 ; j++){
+                ShopProductLogoVo shopProductLogoVo = new ShopProductLogoVo() ;
+                 shopProductLogoVo.setShopId(i);
+                shopProductLogoVo.setPicType(3);
+                shopProductLogoVo.setPicDescribe("门票服务，导游服务");
+                shopProductLogoVo.setPicUrl("http://www.whateverblake.com/shop_travel_"+j+".jpg");
+                shopProductLogoVo.setPicName("农家的门票服务_"+j);
+                shopProductLogoVo.setSort(j);
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_logo").setType("logo").setId(String.valueOf(id++)).setSource(JsonUtil.toJsonString(shopProductLogoVo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    @Test
+    public void addRoomVo(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 201 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=0; j <=2 ; j++){
+                RoomVo vo = new RoomVo() ;
+                vo.setShopId(i);
+                vo.setIsWindow(j==0 ? 1:0);
+                vo.setPicUrl("http://www.whateverblake.com/shop_room_bed_demo.jpg");
+                vo.setBedDescribe("舒适,美梦");
+                vo.setRoomCapacity(j+2);
+                vo.setRoomNumber(random.nextInt(70));
+                int start = random.nextInt(4);
+                vo.setRoomFloor(start+"-"+(start+3));
+                vo.setRoomId(j);
+                vo.setRoomName("房间_"+j);
+                vo.setRoomSquare((start+8)+"-"+(start+15));
+                vo.setRoomType(j+1);
+                vo.setRoomDescribe("自然，清新，梦回故里");
+
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room").
+                        setType("room").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+    @Test
+    public void addRoomVoBook(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=0; j <=2 ; j++){
+                DateTime dateTime = new DateTime("2016-7-7") ;
+                for(int d =1 ; d <= 90 ; d++) {
+                    RoomBookVo vo = new RoomBookVo() ;
+                    vo.setShopId(i);
+                    vo.setRoomId(j);
+                    dateTime = dateTime.plusDays(1);
+                    String dateTime1Str = dateTime.toString("yyyy-MM-dd");
+                    long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
+
+                    vo.setBookDate(dateTime1Str);
+                    vo.setBookDateLongValue(timevalue);
+                    vo.setBookRoomNumber(random.nextInt(70));
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room_book").
+                            setType("book").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+
+
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    @Test
+    public void addCourseVo(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                DateTime dateTime = new DateTime("2016-7-7") ;
+                    CourseVo vo = new CourseVo() ;
+                    vo.setShopId(i);
+                    vo.setCourseId(j);
+                    vo.setCourseName("菜品_"+j);
+                    vo.setCourseNumber(random.nextInt(200));
+                    vo.setCoursePrice(random.nextInt(300));
+                    vo.setSpicyLevel(j % 3);
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course").
+                            setType("course").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+
+    @Test
+    public void addCourseVoBook(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                DateTime dateTime = new DateTime("2016-7-7") ;
+                for(int d =1 ; d <= 90 ; d++) {
+                    CourseBookVo vo = new CourseBookVo() ;
+                    vo.setShopId(i);
+                    vo.setCourseId(j);
+                    dateTime = dateTime.plusDays(1);
+                    String dateTime1Str = dateTime.toString("yyyy-MM-dd");
+                    long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
+                    vo.setBuyDate(dateTime1Str);
+                    vo.setBuyDateLongValue(timevalue);
+                    vo.setNumber(random.nextInt(100));
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course_book").
+                            setType("book").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+
+
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    @Test
+    public void addSpecialtyVo(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                SpecialtyVo vo = new SpecialtyVo() ;
+                vo.setShopId(i);
+                vo.setSpecialtyId(j);
+                vo.setSpecialtyComment("特产，来自大自然");
+                vo.setSpecialtyPrice(random.nextInt(200));
+                vo.setSpecialWeight(random.nextInt(2000));
+                vo.setWeightUnit(1);
+                vo.setSpecialtyPictureUrl("http://www.whateverblake.com/shop_specialty_item_"+j+".jpg");
+
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_item").
+                        setType("specialty").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    @Test
+    public void addTravelVo(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        String [] ticketType = {"成人票","儿童片","老年票"} ;
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=3 ; j++){
+                TicketVo vo = new TicketVo() ;
+                vo.setShopId(i);
+                vo.setIsCurrentDayValid(j==3 ? 1:2);
+                vo.setIsTotalTicket(j==3 ? 1:2);
+                vo.setResortId(i);
+                vo.setResortName("九华山");
+                vo.setTicketType(ticketType[j-1]);
+                vo.setTicketVo(j);
+                vo.setPicUrl("http://www.whateverblake.com/shop_travel_ticket_item_"+j+".jpg");
+
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticket").
+                        setType("ticket").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+            for(int j=1; j <=1 ; j++){
+                GuideVo vo = new GuideVo() ;
+                vo.setShopId(i);
+                vo.setResortId(i);
+                vo.setPicUrl("http://www.whateverblake.com/shop_travel_guide_item_"+j+".jpg");
+                vo.setGuideId(j);
+                vo.setComments("好的导游");
+                vo.setCarService(1);
+                vo.setTourGuideService(1);
+                vo.setDescribe("到本店消费，免费提供导游服务");
+                vo.setTourGuardPrice(random.nextInt(300));
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide").
+                        setType("guide").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+
+            String familyActivity[] = {"游船","赏花","漂流"} ;
+            for(int j=1; j <=3 ; j++){
+                FamilyActivityVo vo = new FamilyActivityVo() ;
+                vo.setShopId(i);
+                vo.setPicUrl("http://www.whateverblake.com/shop_travel_familyactivity_item_"+j+".jpg");
+                vo.setFamilyActiveId(j);
+                vo.setFamilyActivityName(familyActivity[j-1]);
+                vo.setFamilyActivityComment("好玩的自家组织的游玩项目");
+                vo.setFamilyActivityPrice(random.nextInt(300));
+                int num = random.nextInt(5) ;
+                vo.setPersonNumMax(num +2);
+                vo.setPersonNumMin(num);
+                vo.setTourTimeElapse(random.nextInt(3));
+
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_familyactivity").
+                        setType("familyactivity").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+
+        }
+
+
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
 
 
 

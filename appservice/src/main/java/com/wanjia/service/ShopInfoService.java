@@ -25,7 +25,7 @@ public interface ShopInfoService {
     public List<RoomVo> getShopRoomVoByShopId(long shopId, long startDate,long endDate, String indexName, String esType) throws Exception ;
     public List<CourseVo> getShopCourseVoByShopId(long shopId, long bookDate , String indexName, String esType) throws Exception ;
     public List<SpecialtyVo> getShopSpecialtyVoByShopId(long shopId, String indexName, String esType) throws Exception ;
-    public TravelVo getShopTravelVoByShopId(long shopId) throws Exception ;
+    public TravelVo getShopTravelVoByShopId(long shopId,long startDate , long endDate) throws Exception ;
     public ShopRoomAttribute getShopRoomDetailInfo(long shopId,long roomId) throws Exception ;
     public List<RoomPictureVo> getShopRoomPictures(long shopId, long roomId) throws Exception ;
     public List<ShopCourseDetailInfoVo> getShopCourseDetailInfo(long shopId, long courseId) throws Exception ;
@@ -40,8 +40,10 @@ public interface ShopInfoService {
 
     public List<SpecialityPictureVo> getShopSpecialtyPicture(long shopId,long specialtyId)  throws Exception ;
     public SpecialtyNoteVo getShopSpecialtyNote(long shopId,long specialtyId)  throws Exception ;
+    public List<GuidePictureVo> getShopGuidePicture(long shopId, long guideId) throws Exception ;
+    public GuideNoteVo getShopGuideNotice(long shopId, long guideId) throws Exception ;
 
 
 
 
-}
+    }

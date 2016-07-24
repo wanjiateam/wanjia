@@ -31,15 +31,15 @@ public interface ShopInfoService {
     public List<ShopCourseDetailInfoVo> getShopCourseDetailInfo(long shopId, long courseId) throws Exception ;
     public List<ShopCoursePictureVo> getShopCoursePicture(long shopId, long courseId) throws Exception ;
     public List<ShopResortPictureVo> getShopResortPicture(long resortId) throws Exception ;
-    public ShopTicketNoticeVo getShopTicketNoticeByResortId(long resortId) throws Exception;
-    public ShopTicketNoteVo getShopTicketNote(long shopId, long ticketId) throws Exception;
+    public List<ShopTicketNoticeVo> getShopTicketNoticeByResortId(long resortId) throws Exception;
+    public List<ShopTicketNoteVo> getShopTicketNote(long shopId, long ticketId) throws Exception;
     public Set<String> getShopTicketService(long resortId, long ticketId) throws Exception;
 
     public List<FamilyActivityPictureVo> getShopFamilyActivityPicture(long shopId,long activityId) throws Exception ;
     public FamilyActivityNoticeVo getShopFamilyActivityNotice(long shopId, long activityId) throws Exception;
 
     public List<SpecialityPictureVo> getShopSpecialtyPicture(long shopId,long specialtyId)  throws Exception ;
-    public SpecialtyNoteVo getShopSpecialtyNote(long shopId,long specialtyId)  throws Exception ;
+    public List<SpecialtyNoteVo> getShopSpecialtyNote(long shopId,long specialtyId)  throws Exception ;
     public List<GuidePictureVo> getShopGuidePicture(long shopId, long guideId) throws Exception ;
     public GuideNoteVo getShopGuideNotice(long shopId, long guideId) throws Exception ;
 

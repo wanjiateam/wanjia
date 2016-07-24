@@ -93,29 +93,31 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                 }
 
                 //获得店家指定房型房间的总数
-                int roomCapacity = roomVo.getRoomCapacity() ;
+                int roomNumber = roomVo.getRoomNumber() ;
 
                 //获得指定房间的预定情况
+
+                 rangeQueryBuilder = QueryBuilders.rangeQuery("bookDateLongValue").gte(startDate).lt(endDate);
                 List<RoomBookVo>  roomBookVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,rangeQueryBuilder,"shop_room_book","book", RoomBookVo.class);
                 //记录最大可以预定的房间数（部分房间可能已经被预定，同一房型房间数有限）
-                int allowBookNumber = 0 ;
+                int allowBookNumber = -1 ;
                 if(roomBookVos.size() >0){
                     roomVo.setRoomBookVoList(roomBookVos);
                     for(RoomBookVo roomBookVo : roomBookVos){
                         int bookNumber = roomBookVo.getBookRoomNumber() ;
-                        if(bookNumber >= roomCapacity){
-                            roomVo.setAllowBookNumber(0);
+                        if(bookNumber >= roomNumber){
+                            allowBookNumber = 0 ;
                             break ;
                         }else{
-                            int tmpAllowBookNumber =  roomCapacity - bookNumber ;
+                            int tmpAllowBookNumber =  roomNumber - bookNumber ;
                             if(tmpAllowBookNumber < allowBookNumber || allowBookNumber == 0){
                                 allowBookNumber = tmpAllowBookNumber ;
                             }
                         }
                     }
                 }
-                if(allowBookNumber == 0){
-                    allowBookNumber = roomCapacity ;
+                if(allowBookNumber == -1){
+                    allowBookNumber = roomNumber ;
                 }
                 roomVo.setAllowBookNumber(allowBookNumber);
             }
@@ -137,17 +139,26 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         //获得店房间的属性信息
         QueryBuilder queryBuilder = QueryBuilders.termQuery("shopId",shopId);
         QueryBuilder postFilter = QueryBuilders.termQuery("roomId",roomId) ;
-        String facilityIndexName = "shop_room_faciality" ;
+        String facilityIndexName = "shop_room_facility" ;
         String facilityType = "facility" ;
+
         List<ShopRoomFacilityVo> shopRoomFacilityVos = (List<ShopRoomFacilityVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,postFilter,facilityIndexName,facilityType,ShopRoomFacilityVo.class) ;
         shopRoomAttribute.setShopRoomFacilityVos(shopRoomFacilityVos);
 
-        //获得房间的备注信息
-        String noticeIndexName = "shop_room_notice" ;
-        String noticeType = "notice" ;
-        List<ShopRoomNoticeVo> shopRoomNoticeVos = (List<ShopRoomNoticeVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,noticeIndexName,noticeType,ShopRoomNoticeVo.class) ;
-        shopRoomAttribute.setShopRoomNoticeVos(shopRoomNoticeVos);
+        //获得房间的备注信息 放在redis中
+        List<ShopRoomNoticeVo> shopRoomNoticeVos = new ArrayList<ShopRoomNoticeVo>();
+        String key = "room_notice_"+shopId ;
+        Set<String>  notices =  redisClient.getSortedSet(key) ;
+        if(notices.size() >0){
+            for(String value : notices){
+                ShopRoomNoticeVo shopRoomNoticeVo = new ShopRoomNoticeVo();
+                shopRoomNoticeVo.setShopId(shopId);
+                shopRoomNoticeVo.setNotice(value);
+                shopRoomNoticeVos.add(shopRoomNoticeVo) ;
+            }
+        }
 
+        shopRoomAttribute.setShopRoomNoticeVos(shopRoomNoticeVos);
         return shopRoomAttribute;
     }
 
@@ -204,12 +215,18 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                 boolQueryBuilder.must(QueryBuilders.termQuery("shopId",shopId))
                         .must(QueryBuilders.termQuery("courseId",courseId)).must(QueryBuilders.termQuery("buyDateLongValue",bookDate));
                 List<CourseBookVo> courseBookVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,null,"shop_course_book","book", CourseBookVo.class);
+
                 if(courseBookVos.size() > 0){
                     int num  = courseBookVos.get(0).getNumber() ;
                     //获得剩余的最大可预定的数量
-                    courseVo.setAllowBookNumber(courseNum - num);
+                    if(courseNum - num <=0){
+                        courseVo.setAllowBookNumber(0) ;
+                    }else{
+                        courseVo.setAllowBookNumber(courseNum - num);
+                    }
+                }else{
+                    courseVo.setAllowBookNumber(courseNum) ;
                 }
-
             }
         }
         return courseVos;
@@ -296,7 +313,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
      * @return
      */
     @Override
-    public SpecialtyNoteVo getShopSpecialtyNote(long shopId, long specialtyId) throws Exception{
+    public List<SpecialtyNoteVo> getShopSpecialtyNote(long shopId, long specialtyId) throws Exception{
 
         QueryBuilder queryBuilder = QueryBuilders.termQuery("shopId",shopId);
         QueryBuilder postFilter = QueryBuilders.termQuery("specialtyId",specialtyId);
@@ -305,7 +322,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
 
         List<SpecialtyNoteVo> specialtyNoteVos = (List<SpecialtyNoteVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,postFilter,indexName,indexType,SpecialtyNoteVo.class) ;
 
-        return specialtyNoteVos.get(0);
+        return specialtyNoteVos;
     }
 
 
@@ -334,8 +351,8 @@ public class ShopInfoServiceImpl implements ShopInfoService{
             GuideVo guideVo = guideVos.get(0);
             long guideId  = guideVo.getGuideId() ;
 
-            int guideCapacity = guideVo.getGuideCapacity() ;
-            if(guideCapacity == -1){
+            int guideNumber = guideVo.getGuideNumber() ;
+            if(guideNumber == -1){
                 //表示预定数量没有限制
                 guideVo.setAllowBookNumber(-1);
             }else{
@@ -347,7 +364,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                 if(guideBookVos.size() > 0){
                     int allowBookNumber = 0 ;
                     for(GuideBookVo guideBookVo : guideBookVos){
-                             int tmpAllowCapacity = guideCapacity - guideBookVo.getBookRoomNumber() ;
+                             int tmpAllowCapacity = guideNumber - guideBookVo.getBookRoomNumber() ;
                              if(tmpAllowCapacity < allowBookNumber || allowBookNumber == 0){
                                  allowBookNumber = tmpAllowCapacity ;
                              }
@@ -380,7 +397,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
     public List<ShopResortPictureVo> getShopResortPicture(long resortId) throws Exception {
 
         List<ShopResortPictureVo> shopResortPictureVos = new ArrayList<ShopResortPictureVo>();
-        String key = "shop_resort_picture_"+resortId ;
+        String key = "resort_picture_list_"+resortId ;
         Set<String> values = redisClient.getSortedSet(key);
         if(values.size() > 0 ){
             for (String value : values){
@@ -396,17 +413,20 @@ public class ShopInfoServiceImpl implements ShopInfoService{
      * @return
      */
     @Override
-    public ShopTicketNoticeVo getShopTicketNoticeByResortId(long resortId) throws Exception{
+    public List<ShopTicketNoticeVo> getShopTicketNoticeByResortId(long resortId) throws Exception{
 
-        ShopTicketNoticeVo shopTicketNoticeVo = null ;
+        List<ShopTicketNoticeVo> shopTicketNoticeVos = new ArrayList<ShopTicketNoticeVo>() ;
 
-        String key = "notice_"+resortId;
-        String value = redisClient.getValueByKey(key) ;
+        String key = "resort_notice_"+resortId;
+        Set<String> values = redisClient.getSortedSet(key) ;
 
-        if(value != null ){
-            shopTicketNoticeVo = (ShopTicketNoticeVo) JsonUtil.toObject(value,ShopTicketNoticeVo.class);
+        if(values != null && values.size() >0){
+            for(String value : values){
+                ShopTicketNoticeVo shopTicketNoticeVo = (ShopTicketNoticeVo) JsonUtil.toObject(value,ShopTicketNoticeVo.class);
+                shopTicketNoticeVos.add(shopTicketNoticeVo) ;
+            }
         }
-        return shopTicketNoticeVo;
+        return shopTicketNoticeVos;
     }
 
     /**
@@ -416,7 +436,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
      * @return
      */
     @Override
-    public ShopTicketNoteVo getShopTicketNote(long shopId, long ticketId) throws Exception{
+    public List<ShopTicketNoteVo> getShopTicketNote(long shopId, long ticketId) throws Exception{
 
         QueryBuilder queryBuilder = QueryBuilders.termQuery("shopId",shopId);
         QueryBuilder postFilter = QueryBuilders.termQuery("ticketId",ticketId);
@@ -424,7 +444,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         String indexType = "note" ;
         List<ShopTicketNoteVo> shopCoursePictureVos = (List<ShopTicketNoteVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,postFilter,indexName,indexType,ShopTicketNoteVo.class) ;
 
-        return shopCoursePictureVos.get(0);
+        return shopCoursePictureVos;
     }
 
     /**
@@ -474,8 +494,8 @@ public class ShopInfoServiceImpl implements ShopInfoService{
     public FamilyActivityNoticeVo getShopFamilyActivityNotice(long shopId, long activityId) throws Exception {
 
         FamilyActivityNoticeVo familyActivityNoticeVo = new FamilyActivityNoticeVo();
-        String key = "familyActivity_"+shopId+"_"+activityId ;
-        String value = redisClient.getValueByKey(key);
+        String key = "familyActivity_notice_"+shopId+"_"+activityId ;
+        Set<String> value = redisClient.getSortedSet(key);
         familyActivityNoticeVo.setNote(value);
         familyActivityNoticeVo.setShopId(shopId);
         familyActivityNoticeVo.setActivityId(activityId);
@@ -488,7 +508,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
     /**
      * 获得具体农家自助游项目的图片,图片信息放在redis中  三级界面
      * @param shopId
-     * @param activityId
+     * @param guideId
      * @return
      * @throws Exception
      */
@@ -519,8 +539,8 @@ public class ShopInfoServiceImpl implements ShopInfoService{
 
         GuideNoteVo guideNoteVo = new GuideNoteVo();
         String key = "guide_"+shopId+"_"+guideId ;
-        String value = redisClient.getValueByKey(key);
-        guideNoteVo.setNote(value);
+        Set<String> values = redisClient.getSortedSet(key) ;
+        guideNoteVo.setNote(values);
         guideNoteVo.setShopId(shopId);
         guideNoteVo.setGuideId(guideId);
         return guideNoteVo;

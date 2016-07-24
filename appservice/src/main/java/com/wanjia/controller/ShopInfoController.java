@@ -144,7 +144,7 @@ public class ShopInfoController {
     public String getShopCourseList(long shopId,String dateTime) {
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody();
-        jsonReturnBody.setType("getShopProductByProductType");
+        jsonReturnBody.setType("getShopCourseList");
 
         try {
             long bookTime = DateUtil.parseDateToLongValue(dateTime) ;
@@ -265,14 +265,8 @@ public class ShopInfoController {
         jsonReturnBody.setType("getShopSpecialtyNote");
 
         try {
-            SpecialtyNoteVo shopSpecialtyNote = shopInfoService.getShopSpecialtyNote(shopId, specialtyId) ;
-            if(shopSpecialtyNote == null ){
-                jsonReturnBody.setCode(2);
-                jsonReturnBody.setMessage("got a empty result");
-            }else {
-                jsonReturnBody.setCode(1);
-                jsonReturnBody.setMessage(shopSpecialtyNote);
-            }
+            List<SpecialtyNoteVo> specialtyNoteVos = shopInfoService.getShopSpecialtyNote(shopId, specialtyId) ;
+            generateJsonReturnResult(specialtyNoteVos,jsonReturnBody);
         } catch (Exception e) {
             generateJsonReturnResultException(e,jsonReturnBody);
         }
@@ -310,12 +304,12 @@ public class ShopInfoController {
      * @param resortId
      * @return
      */
-    @RequestMapping(value = "ticketInfo", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "ticketResortPic", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getShopTravelTicketInfo(long resortId) {
+    public String getShopTravelTicketResortPic(long resortId) {
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody();
-        jsonReturnBody.setType("getShopTravelInfo");
+        jsonReturnBody.setType("getShopTravelTicketInfo");
 
         try {
             List<ShopResortPictureVo>  shopResortPictureVos = shopInfoService.getShopResortPicture(resortId) ;
@@ -357,7 +351,7 @@ public class ShopInfoController {
 
 
     /**
-     * 获得游的门票提供的服务信息 如缆车，电动车。。。 三级列表
+     * 获得游的门票的备注
      * @param shopId
      * @param  ticketId
      * @return
@@ -367,11 +361,32 @@ public class ShopInfoController {
     public String getShopTravelTicketNote(long shopId,long ticketId) {
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody();
-        jsonReturnBody.setType("getShopTravelTicketService");
+        jsonReturnBody.setType("getShopTravelTicketNote");
 
         try {
-            ShopTicketNoteVo shopTicketNoteVo  = shopInfoService.getShopTicketNote(shopId,ticketId) ;
-            generateJsonReturnResult(shopTicketNoteVo,jsonReturnBody);
+            List<ShopTicketNoteVo> shopTicketNoteVos  = shopInfoService.getShopTicketNote(shopId,ticketId) ;
+            generateJsonReturnResult(shopTicketNoteVos,jsonReturnBody);
+        } catch (Exception e) {
+            generateJsonReturnResultException(e,jsonReturnBody);
+        }
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+    /**
+     * 获得游的门票的须知
+     * @param  resortId
+     * @return
+     */
+    @RequestMapping(value = "ticketNotice", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopTravelTicketNotice(long resortId) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getShopTravelTicketNotice");
+
+        try {
+            List<ShopTicketNoticeVo> shopTicketNoticeVos  = shopInfoService.getShopTicketNoticeByResortId(resortId) ;
+            generateJsonReturnResult(shopTicketNoticeVos,jsonReturnBody);
         } catch (Exception e) {
             generateJsonReturnResultException(e,jsonReturnBody);
         }
@@ -389,7 +404,7 @@ public class ShopInfoController {
     public String getShopTravelGuidePic(long shopId,long guideId) {
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody();
-        jsonReturnBody.setType("getShopTravelTicketService");
+        jsonReturnBody.setType("getShopTravelGuidePic");
 
         try {
             List<GuidePictureVo> guidePictureVos  = shopInfoService.getShopGuidePicture(shopId, guideId) ;
@@ -411,7 +426,7 @@ public class ShopInfoController {
     public String getShopTravelGuideNote(long shopId,long guideId) {
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody();
-        jsonReturnBody.setType("getShopTravelTicketService");
+        jsonReturnBody.setType("getShopTravelGuideNote");
 
         try {
             GuideNoteVo guideNoteVo  = shopInfoService.getShopGuideNotice(shopId, guideId);
@@ -429,7 +444,7 @@ public class ShopInfoController {
      * @param  familyActivityId
      * @return
      */
-    @RequestMapping(value = "familityActivityPic", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "familyActivityPic", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getShopTravelFamilyActivityPic(long shopId,long familyActivityId) {
 

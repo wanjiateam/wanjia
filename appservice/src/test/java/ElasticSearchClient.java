@@ -2,13 +2,17 @@ import com.sun.org.apache.xml.internal.dtm.ref.DTMNamedNodeMap;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.vo.*;
 import com.wanjia.vo.live.RoomBookVo;
+import com.wanjia.vo.live.RoomPictureVo;
 import com.wanjia.vo.live.RoomVo;
+import com.wanjia.vo.live.ShopRoomFacilityVo;
 import com.wanjia.vo.restaurant.CourseBookVo;
 import com.wanjia.vo.restaurant.CourseVo;
+import com.wanjia.vo.restaurant.ShopCourseDetailInfoVo;
+import com.wanjia.vo.restaurant.ShopCoursePictureVo;
+import com.wanjia.vo.speciality.SpecialityPictureVo;
+import com.wanjia.vo.speciality.SpecialtyNoteVo;
 import com.wanjia.vo.speciality.SpecialtyVo;
-import com.wanjia.vo.travel.FamilyActivityVo;
-import com.wanjia.vo.travel.GuideVo;
-import com.wanjia.vo.travel.TicketVo;
+import com.wanjia.vo.travel.*;
 import org.apache.lucene.index.SegmentInfos;
 import org.apache.lucene.queryparser.xml.builders.BooleanQueryBuilder;
 import org.apache.lucene.queryparser.xml.builders.RangeFilterBuilder;
@@ -654,6 +658,82 @@ public class ElasticSearchClient {
     }
 
 
+//添加房间的属性信息
+    @Test
+    public void addRoomAttribute(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+       String []  facilityNames = {"wifi","热水","吹风","停车位","加床：不可加","窗户：有","无早"} ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=0; j <=2 ; j++){
+                for(int p = 0; p <facilityNames.length ; p++){
+                    ShopRoomFacilityVo vo = new ShopRoomFacilityVo() ;
+                    vo.setShopId(i);
+                    vo.setRoomId(j);
+                    vo.setFacilityName(facilityNames[p]);
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room_facility").
+                            setType("facility").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+
+            }
+
+            }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+    //添加房间的图片信息
+    @Test
+    public void addRoomPic(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=0; j <=2 ; j++){
+                for(int p = 1; p <=5 ; p++){
+                    RoomPictureVo vo = new RoomPictureVo();
+                    vo.setShopId(i);
+                    vo.setRoomId(j);
+                    vo.setPicDesc("房间信息图片");
+                    vo.setPicName("卧室");
+                    vo.setPicUrl("http://www.whateverblake.com/shop_room_pic_"+p+".jpg");
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room_picture").
+                            setType("picture").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
     @Test
     public void addCourseVo(){
 
@@ -737,6 +817,78 @@ public class ElasticSearchClient {
 
     }
 
+    @Test
+    public void addCourseDetailInfo(){
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                    ShopCourseDetailInfoVo vo = new ShopCourseDetailInfoVo() ;
+                    vo.setShopId(i);
+                    vo.setCourseId(j);
+                    vo.setTaste(i % 3);
+                    vo.setNote("原材料全部来自农家自己耕种");
+                    vo.setConsist("土豆，青椒，腊肉");
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course_detailinfo").
+                            setType("course").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+    //添加菜品的图片信息
+    @Test
+    public void addCoursPic(){
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                for(int p = 1 ; p <=5 ; p++ ){
+                    ShopCoursePictureVo vo = new ShopCoursePictureVo() ;
+                    vo.setShopId(i);
+                    vo.setCourseId(j);
+                    vo.setPicDesc("菜品信息图片");
+                    vo.setPicName("美味佳肴");
+                    vo.setPicUrl("http://www.whateverblake.com/shop_course_pic_"+p+".jpg");
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course_picture").
+                            setType("picture").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
 
     @Test
     public void addSpecialtyVo(){
@@ -756,10 +908,90 @@ public class ElasticSearchClient {
                 vo.setSpecialWeight(random.nextInt(2000));
                 vo.setWeightUnit(1);
                 vo.setSpecialtyPictureUrl("http://www.whateverblake.com/shop_specialty_item_"+j+".jpg");
-
+                vo.setSpecialtyNumber(random.nextInt(100));
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_item").
                         setType("specialty").setId(String.valueOf(id++)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+    //添加特产的图片信息
+    @Test
+    public void addSpecialtyPic(){
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                for(int p = 1 ; p <=5 ; p++ ){
+                    SpecialityPictureVo vo = new SpecialityPictureVo() ;
+                    vo.setShopId(i);
+                    vo.setSpecialtyId(j);
+                    vo.setPicDesc("特产信息图片");
+                    vo.setPicName("特产");
+                    vo.setPicUrl("http://www.whateverblake.com/shop_specialty_pic_"+p+".jpg");
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_picture").
+                            setType("picture").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    //添加特产的备注信息
+    @Test
+    public void addSpecialtyNote(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+            for(int j=1; j <=20 ; j++){
+                for(int p = 1 ; p <=2 ; p++){
+                    SpecialtyNoteVo vo = new SpecialtyNoteVo() ;
+                    vo.setShopId(i);
+                    vo.setSpecialtyId(j);
+                    if(p==1){
+                        vo.setNote("生长环境：深山中，生长2年才能进行挖掘；");
+                    }else{
+                        vo.setNote("效用：清热解毒、丰胸养颜、益脑增发。");
+                    }
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_note").
+                            setType("note").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+                }
+
             }
 
         }
@@ -796,6 +1028,7 @@ public class ElasticSearchClient {
                 vo.setResortName("九华山");
                 vo.setTicketType(ticketType[j-1]);
                 vo.setTicketVo(j);
+                vo.setMaxBookNumber(random.nextInt(30));
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_ticket_item_"+j+".jpg");
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticket").
@@ -814,6 +1047,7 @@ public class ElasticSearchClient {
                 vo.setTourGuideService(1);
                 vo.setDescribe("到本店消费，免费提供导游服务");
                 vo.setTourGuardPrice(random.nextInt(300));
+                vo.setGuideNumber(random.nextInt(10));
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide").
                         setType("guide").setId(String.valueOf(id++)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
@@ -833,6 +1067,7 @@ public class ElasticSearchClient {
                 vo.setPersonNumMax(num +2);
                 vo.setPersonNumMin(num);
                 vo.setTourTimeElapse(random.nextInt(3));
+                vo.setMaxBookNumber(random.nextInt(20));
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_familyactivity").
                         setType("familyactivity").setId(String.valueOf(id++)).
@@ -841,6 +1076,89 @@ public class ElasticSearchClient {
 
 
         }
+
+
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+    //添加导游预定信息表的备注信息
+    @Test
+    public void addGuideVoBook(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        Random random = new Random() ;
+        int id = 1 ;
+
+        for(int i = 1 ; i <=20 ; i++){
+                DateTime dateTime = new DateTime("2016-7-7") ;
+                for(int d =1 ; d <= 90 ; d++) {
+                    GuideBookVo vo = new GuideBookVo() ;
+                    vo.setShopId(i);
+                    vo.setGuideId(1);
+                    dateTime = dateTime.plusDays(1);
+                    String dateTime1Str = dateTime.toString("yyyy-MM-dd");
+                    long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
+                    vo.setBookDate(dateTime1Str);
+                    vo.setBookDateLongValue(timevalue);
+                    vo.setBookRoomNumber(random.nextInt(5));
+
+                    bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide_book").
+                            setType("book").setId(String.valueOf(id++)).
+                            setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+
+
+            }
+
+        }
+
+        BulkResponse bulkResponse =  bulkRequestBuilder.execute().actionGet() ;
+        if(bulkResponse.hasFailures()){
+            BulkItemResponse [] items =  bulkResponse.getItems() ;
+            for(BulkItemResponse item : items){
+                if(item.isFailed()){
+                    item.getFailure().getCause().printStackTrace() ;
+                }
+            }
+        }
+
+    }
+
+
+
+    //添加店家门票的备注信息
+    @Test
+    public void addTicketNote(){
+
+        BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
+
+        int id = 1 ;
+
+        String[] values = {"购票当天有效，扫描后作废","详细信息，请参见票面介绍"} ;
+        for(int i=1 ; i<=20 ; i++){
+            for(int j=1; j<=2;j++){
+                ShopTicketNoteVo vo = new ShopTicketNoteVo() ;
+                vo.setShopId(i);
+                vo.setNote(values[j-1]);
+                vo.setTicketId(i);
+                bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_ticket_note").
+                        setType("note").setId(String.valueOf(id++)).
+                        setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
+            }
+        }
+
+
 
 
 

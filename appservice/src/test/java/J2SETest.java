@@ -95,4 +95,10 @@ public class J2SETest {
 
     }
 
+    @Test
+    public void testDayOfWeek(){
+        DateTime dateTime = new DateTime("2016-7-29");
+        System.out.println(dateTime.getDayOfWeek());
+    }
+
 }

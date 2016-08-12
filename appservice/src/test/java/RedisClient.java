@@ -6,6 +6,7 @@ import com.wanjia.vo.travel.FamilyActivityPictureVo;
 import com.wanjia.vo.travel.GuidePictureVo;
 import com.wanjia.vo.travel.ShopResortPictureVo;
 import com.wanjia.vo.travel.ShopTicketNoticeVo;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import redis.clients.jedis.Jedis;
@@ -291,4 +292,122 @@ public class RedisClient {
         List<ResortLandmarkVo> vos = (List<ResortLandmarkVo>)JsonUtil.toList(value,new TypeToken<List<ResortLandmarkVo>>(){}.getType());
         System.out.println(vos.size());
     }
+
+    @Test
+    public void addHotelPrice(){
+        Random random = new Random() ;
+        String prefix = "shop_room_price_";
+        for(int i=1;i <=20 ; i++){
+            for(int j=0 ; j<=3 ; j++){
+                int base = random.nextInt(300) ;
+                String key = prefix+i+"_"+j ;
+                jedis.hset(key,"normal",String.valueOf(base));
+                jedis.hset(key,"weekend",String.valueOf(base+30));
+
+                int times = random.nextInt(4);
+                DateTime dateTime = new DateTime("2016-7-7") ;
+
+                for(int p= 1 ; p<= times ;p++){
+                    int gap = random.nextInt(30);
+                    dateTime = dateTime.plusDays(gap);
+                    String dateStr =  dateTime.toString("yyyy-MM-dd") ;
+                    jedis.hset(key,dateStr,String.valueOf(base+70));
+                }
+            }
+
+        }
+    }
+
+
+    @Test
+    public void getHotelPrice(){
+        String prefix = "shop_room_price_";
+        for(int i=1;i <=20 ; i++){
+            for(int j=1 ; j<=3 ; j++){
+                String key = prefix+i+"_"+j ;
+                Map<String,String> map = jedis.hgetAll(key) ;
+                Set<Map.Entry<String,String>> entries = map.entrySet() ;
+                for(Map.Entry<String,String> entry : entries){
+                    System.out.println("key is = "+entry.getKey()+"----value = "+entry.getValue());
+                }
+            }
+        }
+    }
+
+    @Test
+    public void addTicketPrice(){
+
+        Random random = new Random() ;
+        String ticketKeyPrefix = "shop_travel_ticket_price_";
+        for(int i=1 ; i <=20 ; i++){
+            for(int j=0 ; j<=3 ; j++){
+                String key = ticketKeyPrefix+i+"_"+j ;
+                int base = random.nextInt(200) ;
+
+                jedis.hset(key,"normal",String.valueOf(base));
+                int times = random.nextInt(4);
+                DateTime dateTime = new DateTime("2016-7-7") ;
+
+                for(int p= 1 ; p<= times ;p++){
+                    int gap = random.nextInt(30);
+                    dateTime = dateTime.plusDays(gap);
+                    String dateStr =  dateTime.toString("yyyy-MM-dd") ;
+                    jedis.hset(key,dateStr,String.valueOf(base+70));
+                }
+            }
+
+        }
+
+    }
+
+    @Test
+    public void addGuidePrice() {
+
+        Random random = new Random();
+        String ticketKeyPrefix = "shop_travel_guide_price_";
+        for (int i = 1; i <= 20; i++) {
+            for (int j = 0; j < 1; j++) {
+                String key = ticketKeyPrefix + i + "_" + j;
+                int base = random.nextInt(200);
+
+                jedis.hset(key, "normal", String.valueOf(base));
+                int times = random.nextInt(4);
+                DateTime dateTime = new DateTime("2016-7-7");
+
+                for (int p = 1; p <= times; p++) {
+                    int gap = random.nextInt(30);
+                    dateTime = dateTime.plusDays(gap);
+                    String dateStr = dateTime.toString("yyyy-MM-dd");
+                    jedis.hset(key, dateStr, String.valueOf(base + 70));
+                }
+            }
+
+        }
+    }
+
+    @Test
+    public void addFamilyActivityPrice() {
+
+        Random random = new Random();
+        String ticketKeyPrefix = "shop_travel_familyactivity_price_";
+        for (int i = 1; i <= 20; i++) {
+            for (int j = 0; j < 3; j++) {
+                String key = ticketKeyPrefix + i + "_" + j;
+                int base = random.nextInt(600);
+
+                jedis.hset(key, "normal", String.valueOf(base));
+                int times = random.nextInt(4);
+                DateTime dateTime = new DateTime("2016-7-7");
+
+                for (int p = 1; p <= times; p++) {
+                    int gap = random.nextInt(30);
+                    dateTime = dateTime.plusDays(gap);
+                    String dateStr = dateTime.toString("yyyy-MM-dd");
+                    jedis.hset(key, dateStr, String.valueOf(base + 70));
+                }
+            }
+
+        }
+    }
+
 }

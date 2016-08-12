@@ -11,7 +11,6 @@ public class ShopTravelListVo extends ShopListBaseVo implements  Comparable<Shop
     private double travelGuideLowestPrice ;
     private double travelSpecialLowestPrice ;
     private double travelTicketLowestPrice ;
-    private String ticketCheapestDate ;
 
     public int getTravelTicketState() {
         return travelTicketState;
@@ -61,13 +60,6 @@ public class ShopTravelListVo extends ShopListBaseVo implements  Comparable<Shop
         this.travelTicketLowestPrice = travelTicketLowestPrice;
     }
 
-    public String getTicketCheapestDate() {
-        return ticketCheapestDate;
-    }
-
-    public void setTicketCheapestDate(String ticketCheapestDate) {
-        this.ticketCheapestDate = ticketCheapestDate;
-    }
 
     @Override
     public int compareTo(ShopTravelListVo o) {

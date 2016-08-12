@@ -46,6 +46,26 @@ public class RedisClient {
         return   jedis.zadd(key,values);
     }
 
+    // hash data structure
+    public Map<String,String> getAllHashValue(String key){
+        Map<String,String> result = jedis.hgetAll(key) ;
+        return result;
+    }
+    public String getHashFieldValue(String key,String field){
+        return jedis.hget(key,field) ;
+    }
+
+
+    public long setHashValue(String key,String field,String value){
+        long result = jedis.hset(key,field,value) ;
+        return result ;
+
+    }
+
+    public boolean isHashFieldExist(String key,String field){
+        boolean result = jedis.hexists(key,field) ;
+        return result ;
+    }
 
 
 }

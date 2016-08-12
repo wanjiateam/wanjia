@@ -1,12 +1,10 @@
 package com.wanjia.service.impl;
 
 import com.wanjia.service.ShopInfoService;
-import com.wanjia.utils.ElasticSearchClient;
-import com.wanjia.utils.JsonUtil;
-import com.wanjia.utils.RedisClient;
-import com.wanjia.utils.SortField;
+import com.wanjia.utils.*;
 import com.wanjia.vo.HotelPriceVo;
 import com.wanjia.vo.ShopProductLogoVo;
+import com.wanjia.vo.ShopRecommendAndCommentNumberVo;
 import com.wanjia.vo.live.*;
 import com.wanjia.vo.restaurant.CourseBookVo;
 import com.wanjia.vo.restaurant.CourseVo;
@@ -26,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -39,6 +38,8 @@ public class ShopInfoServiceImpl implements ShopInfoService{
 
     @Autowired
     RedisClient redisClient ;
+
+    private String roomPriceKeyPrefix = "shop_room_price_";
     /**
      * 获取店家住食游产展示页头部的logo图片
      * @param shopId
@@ -70,7 +71,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
      */
     @Override
     public List<RoomVo> getShopRoomVoByShopId(long shopId, long startDate, long endDate, String indexName, String esType) throws Exception {
-        long gap = (endDate -startDate)/(24 * 60 * 60 * 1000) ;
+        long gap = (endDate -startDate) / DateUtil.dayMillis;
         QueryBuilder queryBuilder = QueryBuilders.termQuery("shopId",shopId) ;
         //获得店家的所有房型
         List<RoomVo> roomVos = (List<RoomVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,indexName,esType,RoomVo.class) ;
@@ -78,27 +79,21 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         if(roomVos != null && roomVos.size() > 0){
             //获得店家所有房间的指定预订日期的价格
             for(RoomVo roomVo : roomVos){
-               long roomId =  roomVo.getRoomId();
-                BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery() ;
-                boolQueryBuilder.must(QueryBuilders.termQuery("shopId",shopId)).must(QueryBuilders.termQuery("roomId",roomId));
-                RangeQueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("priceDateLongValue").gte(startDate).lt(endDate);
-                //获得指定房间的指定日期的所有价格
-                List<HotelPriceVo> hotelPriceVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,rangeQueryBuilder,"shop_hotel_price","price", HotelPriceVo.class);
-                if(hotelPriceVos.size() >0){
-                    long totalPrice = 0 ;
-                    for(HotelPriceVo hotelPriceVo : hotelPriceVos){
-                        totalPrice += hotelPriceVo.getRoomPrice() ;
-                    }
-                    roomVo.setPrice((int)Math.ceil(totalPrice/gap));
+
+                long roomId =  roomVo.getRoomId();
+
+                double totalPrice = getRoomTotalPriceDuringDateRange(shopId,roomId,startDate,endDate) ;
+
+                if(totalPrice ==0){
+                    continue;
                 }
+
+                roomVo.setPrice((int)Math.ceil(totalPrice/gap));
 
                 //获得店家指定房型房间的总数
                 int roomNumber = roomVo.getRoomNumber() ;
-
-                //获得指定房间的预定情况
-
-                 rangeQueryBuilder = QueryBuilders.rangeQuery("bookDateLongValue").gte(startDate).lt(endDate);
-                List<RoomBookVo>  roomBookVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,rangeQueryBuilder,"shop_room_book","book", RoomBookVo.class);
+                //获得一段时间内指定店家特定房型的预订情况
+                List<RoomBookVo>  roomBookVos =  getRoomBookInfoDuringDateRange(shopId,roomId,startDate,endDate);
                 //记录最大可以预定的房间数（部分房间可能已经被预定，同一房型房间数有限）
                 int allowBookNumber = -1 ;
                 if(roomBookVos.size() >0){
@@ -110,7 +105,8 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                             break ;
                         }else{
                             int tmpAllowBookNumber =  roomNumber - bookNumber ;
-                            if(tmpAllowBookNumber < allowBookNumber || allowBookNumber == 0){
+                            //如何某一天的可预订数小于以前的可预订数 那么按照这一天的可预订数作为最大可预订数
+                            if(tmpAllowBookNumber < allowBookNumber || allowBookNumber == -1){
                                 allowBookNumber = tmpAllowBookNumber ;
                             }
                         }
@@ -124,6 +120,57 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         }
         return roomVos;
     }
+
+
+
+    //获得店家指定日期范围内的房间预订情况
+
+    public List<RoomBookVo> getRoomBookInfoDuringDateRange(long shopId,long roomId,long startDate,long endDate) throws Exception {
+
+        //形成查询预订情况的基础条件 shopId：xxx  roomId:xxx
+        BoolQueryBuilder boolQueryBuilder = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("shopId",shopId))
+                .must(QueryBuilders.termQuery("roomId",roomId));
+        QueryBuilder rangeQueryBuilder = QueryBuilders.rangeQuery("bookDateLongValue").gte(startDate).lt(endDate);
+        //获得指定房间的预定情况
+        List<RoomBookVo>  roomBookVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,rangeQueryBuilder,"shop_room_book","book", RoomBookVo.class);
+
+        return roomBookVos ;
+    }
+
+    //获取一段时间内住的总价格
+    @Override
+    public double getRoomTotalPriceDuringDateRange( long shopId,long roomId,long startDate,long endDate) {
+
+        String roomPriceKey = roomPriceKeyPrefix + shopId + "_" + roomId;
+        //如果没有设置具体房间的价格 直接返回
+        Map<String, String> allRoomPrices = redisClient.getAllHashValue(roomPriceKey);
+        double totalPrice = 0;
+        if (allRoomPrices.size() != 0) {
+            List<String> dateStrList = DateUtil.getDateList(startDate, endDate);
+            String price = null;
+            for(int i = 0 ; i < dateStrList.size() -1 ; i++){
+                String dateStr = dateStrList.get(i);
+                price = allRoomPrices.get(dateStr);
+                if (price == null) {
+                    boolean isWeekend = DateUtil.isWeekend(dateStr);
+                    if (isWeekend) {
+                        String weekendPrice = allRoomPrices.get("weekend");
+                        if (weekendPrice != null) {
+                            price = weekendPrice;
+                        } else {
+                            price = allRoomPrices.get("normal");
+                        }
+                    } else {
+                        price = allRoomPrices.get("normal");
+                    }
+                }
+                totalPrice += Double.valueOf(price);
+            }
+        }
+        return totalPrice ;
+    }
+
+
 
     /**
      * 获得店家的具体房型对应的属性信息和住房注意事项  三级界面
@@ -164,7 +211,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
 
 
     /**
-     * 获取店家具体房型对应的图片信息
+     * 获取店家具体房型对应的图片信息 三级界面
      * @param shopId
      * @param roomId
      * @return
@@ -225,6 +272,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                         courseVo.setAllowBookNumber(courseNum - num);
                     }
                 }else{
+                    //表示没有任何预订记录 可预订数为最大的数量
                     courseVo.setAllowBookNumber(courseNum) ;
                 }
             }
@@ -233,7 +281,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
     }
 
     /**
-     * 获得店家一道菜的集体信息 菜的三级界面
+     * 获得店家一道菜的具体信息 三级界面
      * @param shopId
      * @param courseId
      * @return
@@ -339,41 +387,80 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         TravelVo travelVo = new TravelVo() ;
         String ticketIndexName = "shop_travel_ticket" ;
         String ticketType = "ticket";
-        List<TicketVo> TicketVos = (List<TicketVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ticketIndexName,ticketType,TicketVo.class) ;
-        travelVo.setTicketVoList(TicketVos);
+        List<TicketVo> ticketVos = (List<TicketVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ticketIndexName,ticketType,TicketVo.class) ;
+        travelVo.setTicketVoList(ticketVos);
+        //默认二级界面展示门票 导游 农家特色游的价格为用户入店的价格
+        String strDate = DateUtil.formatDate(startDate) ;
+
+        String ticketPricePrefix = "shop_travel_ticket_price_"+shopId+"_" ;
+        String guidePricePrefix = "shop_travel_guide_price_"+shopId+"_" ;
+        String familyactivityPricePrefix = "shop_travel_familyactivity_price_"+shopId+"_";
+        //获得门票的价格 以普通价格显示的方式显示给用户 不显示特殊日期的价格，在用户真正选择了下单日期后显示门票票选择的日期的真实价格
+        for(TicketVo ticketVo : ticketVos ){
+            long ticketId = ticketVo.getTicketId() ;
+            String ticketKey = ticketPricePrefix+ticketId ;
+            //获得门票的普通价格
+            Map<String,String> priceAll = redisClient.getAllHashValue(ticketKey) ;
+            String price =  priceAll.get(strDate) ;
+            if(price == null){
+                price = priceAll.get("normal") ;
+            }
+            if(price != null){
+                ticketVo.setTicketPrice(Double.valueOf(price));
+            }
+        }
+
+
         //获得店家导游服务的列表，每天有数量的限制（比如每天能提供五个导游的服务）（用户每单每天只能预定一个导游）
         String guideIndexName = "shop_travel_guide" ;
         String guideType = "guide";
         List<GuideVo> guideVos = (List<GuideVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,guideIndexName,guideType,GuideVo.class) ;
         if(guideVos.size() > 0 ){
-            String guideBookIndexName = "shop_travel_guide_book" ;
-            String guideBookIndexType = "book" ;
+
+            //对于店家来书 提供的只是一个导游服务 ，不需要把每个导游的信息录入系统
             GuideVo guideVo = guideVos.get(0);
             long guideId  = guideVo.getGuideId() ;
-
             int guideNumber = guideVo.getGuideNumber() ;
+
             if(guideNumber == -1){
                 //表示预定数量没有限制
                 guideVo.setAllowBookNumber(-1);
             }else{
-                //根据预定日期获得最大的可预定数（获得每天预定数与最大预定数的差，然后取其中的最小值）
+
+                String guideBookIndexName = "shop_travel_guide_book" ;
+                String guideBookIndexType = "book" ;
+                //根据预定日期获得最大的可预定数（获得每天预定数与最大预定数的差，然后取其中的最小值） 导游按照开始日期获得
                 QueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("shopId",shopId)).must(QueryBuilders.termQuery("guideId",guideId))
-                        .must(QueryBuilders.rangeQuery("bookDateLongValue").gte(startDate).lt(endDate)) ;
-                List<GuideBookVo> guideBookVos = (List<GuideBookVo> )elasticSearchClient.queryDataFromEsWithoutPaging(boolQuery,null,guideBookIndexName,
-                        guideBookIndexType,GuideBookVo.class) ;
-                if(guideBookVos.size() > 0){
-                    int allowBookNumber = 0 ;
-                    for(GuideBookVo guideBookVo : guideBookVos){
-                             int tmpAllowCapacity = guideNumber - guideBookVo.getBookRoomNumber() ;
-                             if(tmpAllowCapacity < allowBookNumber || allowBookNumber == 0){
-                                 allowBookNumber = tmpAllowCapacity ;
-                             }
+                        .must(QueryBuilders.termQuery("bookDateLongValue",startDate)) ;
+
+                GuideBookVo guideBookVo = getShopTravelGuideBookInfoShopId(shopId,guideId,startDate) ;
+
+                if(guideBookVo  != null ){
+                    int allowBookNumber = guideNumber - guideBookVo.getBookRoomNumber() ;
+                    if(allowBookNumber <= 0 ){
+                                 allowBookNumber = 0  ;
                     }
                     guideVo.setAllowBookNumber(allowBookNumber);
+                }else{
+                    //如果没有预订记录 表示可预订数为最大可预订的数量
+                    guideVo.setAllowBookNumber(guideNumber);
                 }
             }
+            //获得导游的价格
+            String guideKey =  guidePricePrefix+guideId ;
+            Map<String,String> priceAll = redisClient.getAllHashValue(guideKey) ;
+            String price =  priceAll.get(strDate) ;
+            if(price == null){
+                price = priceAll.get("normal") ;
+            }
+            if(price != null){
+                guideVo.setTourGuardPrice(Double.valueOf(price));
+            }
+
+
 
         }
+
         travelVo.setGuideVoList(guideVos);
 
         // 获得店家特色游的列表 没有总数的限制，但是每单最大数量有限制
@@ -382,10 +469,44 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         List<FamilyActivityVo> familyActivityVos = (List<FamilyActivityVo> )elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,familyActivityIndexName,familyActivityType,FamilyActivityVo.class) ;
         travelVo.setFamilyActivityVoList(familyActivityVos);
 
+        for(FamilyActivityVo familyActivityVo  : familyActivityVos ){
+            long familyActiveId = familyActivityVo.getFamilyActiveId() ;
+            String familyKey = familyactivityPricePrefix+familyActiveId ;
+            //获得农家特色游得得价格
+            Map<String,String> priceAll = redisClient.getAllHashValue(familyKey) ;
+            String price =  priceAll.get(strDate) ;
+            if(price == null){
+                price = priceAll.get("normal") ;
+            }
+            if(price != null){
+                familyActivityVo.setFamilyActivityPrice(Double.valueOf(price));
+            }
+        }
         return travelVo;
     }
 
+	/**
+     * 获得指定日期店家的导游预订情况
+     * @param shopId
+     * @param guideId
+     * @param dateTime
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public GuideBookVo getShopTravelGuideBookInfoShopId(long shopId, long guideId, long dateTime) throws Exception {
 
+        String guideBookIndexName = "shop_travel_guide_book" ;
+        String guideBookIndexType = "book" ;
+        //根据预定日期获得最大的可预定数（获得每天预定数与最大预定数的差，然后取其中的最小值） 导游按照开始日期获得
+        QueryBuilder boolQuery = QueryBuilders.boolQuery().must(QueryBuilders.termQuery("shopId",shopId)).must(QueryBuilders.termQuery("guideId",guideId))
+                .must(QueryBuilders.termQuery("bookDateLongValue",dateTime)) ;
+
+        List<GuideBookVo> guideBookVos = (List<GuideBookVo> )elasticSearchClient.queryDataFromEsWithoutPaging(boolQuery,null,guideBookIndexName,
+                guideBookIndexType,GuideBookVo.class) ;
+
+        return guideBookVos.isEmpty() ? null : guideBookVos.get(0);
+    }
 
     /**
      * 获得景区店家的图片列表 三级界面
@@ -530,7 +651,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
     /**
      * 获得农家自助游项目的提示信息 三级界面
      * @param shopId
-     * @param activityId
+     * @param guideId
      * @return
      * @throws Exception
      */
@@ -546,5 +667,57 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         return guideNoteVo;
     }
 
+    /**
+     * 获得游得价格
+     * @param key
+     * @param dateTime
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public double getTravelPrice(String key, long dateTime) throws Exception {
 
+        String dateStr =  DateUtil.formatDate(dateTime);
+        Map<String,String> travelPrices = redisClient.getAllHashValue(key) ;
+        String price =  travelPrices.get(dateStr) ;
+        if(price == null){
+            price = travelPrices.get("normal") ;
+        }
+        if(price != null ){
+            return Double.parseDouble(price) ;
+        }
+        return 0;
+    }
+
+    /**
+     * 获得店家的推荐数好评数和全部评论数（根据不同的产品 住食游产）
+     * @param shopId
+     * @param indexname
+     * @param indextype
+     * @return
+     */
+    @Override
+    public ShopRecommendAndCommentNumberVo getShopRecommendAndCommentNumber(long shopId, String indexname, String indextype) throws  Exception{
+
+        ShopRecommendAndCommentNumberVo  shopRecommendAndCommentNumberVo = null ;
+        List fields = new ArrayList();
+        fields.add("goodCommentNum");
+        fields.add("recommendNum");
+        fields.add("totalCommentNum") ;
+        QueryBuilder queryBuilder = QueryBuilders.termQuery("shopId",shopId) ;
+        Map<String,Object> mapValue = elasticSearchClient.queryUniqueColumnSpecificField(queryBuilder,null,fields,indexname,indextype) ;
+
+        if(mapValue.size() >0){
+            try{
+                int recommentNumber = Integer.valueOf(mapValue.get("recommendNum").toString());
+                int goodCommentNum = Integer.valueOf(mapValue.get("goodCommentNum").toString());
+                int totalCommentNum = Integer.valueOf(mapValue.get("totalCommentNum").toString());
+                shopRecommendAndCommentNumberVo = new ShopRecommendAndCommentNumberVo(shopId,recommentNumber,goodCommentNum,totalCommentNum);
+            }catch(Exception e){
+               throw e ;
+            }
+        }
+
+        return shopRecommendAndCommentNumberVo;
+    }
 }

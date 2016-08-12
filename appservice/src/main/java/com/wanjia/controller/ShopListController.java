@@ -78,6 +78,7 @@ public class ShopListController {
             sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
             pageResult = shopListService.getShopHotelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopHotelListVo.class,landmarkId,shopName) ;
         }else{
+            //按照店家的房价最低价
             indexName = "shop_hotel_lowestprice";
             type = "price";
             pageResult = shopListService.getShopHotelListPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page,HotelPriceVo.class ,landmarkId,shopName) ;
@@ -186,7 +187,7 @@ public class ShopListController {
 
 
     /**
-     * 获取提供游玩服务店家列表
+     * 获取提供游玩服务店家列表(对于安装门票低价优先处理逻辑是 对于一级界面存放的都是成人票的普通价格票)
      * @param resortId
      * @param startDate
      * @param endDate
@@ -194,6 +195,7 @@ public class ShopListController {
      * @param sortOrder
      * @param page
      * @param pageSize
+     * @param  shopName  店家的名称
      * @return
      */
     @RequestMapping(value = "listTravel", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
@@ -218,7 +220,7 @@ public class ShopListController {
         switch (sort) {
             case 1 : sortField = "recommendNum"; break; //推荐优先
             case 2 : sortField = "goodCommentNum"; break; //好评优先
-            case 3 : sortField = "price" ;  break; //门票低价优先
+            case 3 : sortField = "travelTicketLowestPrice"; travelStateField= "travelTicketState";  break; //门票低价优先
             case 4 : sortField = "travelGuideLowestPrice"; travelStateField= "travelGuideState";break;//导游低价优先
             case 5 : sortField = "travelSpecialLowestPrice"; travelStateField= "travelSpecialState"; break;//农家特色游低价优先
 
@@ -233,14 +235,8 @@ public class ShopListController {
 
 
         PageResult pageResult = null ;
-        if(sort != 3){
-            sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
-            pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
-        }else{
-            indexName = "shop_travel_ticketlowestprice";
-            type = "price";
-            pageResult = shopListService.getShopTravelListTicketPriceLowFirstByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, TicketPriceVo.class ,landmarkId,shopName) ;
-        }
+        sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
+        pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
 
 
         parsePageResult(pageResult,jsonReturnBody);
@@ -262,25 +258,31 @@ public class ShopListController {
      */
     @RequestMapping(value = "listByDistance", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String getShopListPagingByDistance(long resortId,int productType,int page, int pageSize,double lon, double lat){
+    public String getShopListPagingByDistance(long resortId,int productType,int page, int pageSize,double lon, double lat,String startDate,String endDate){
 
         String indexName = "" ;
         String type = "" ;
-
-        switch(productType){
-            case 1 : indexName="shop_hotel";type = "hotel" ;break;
-            case 2 : indexName="shop_restaurant";type = "restaurant" ;break;
-            case 3 : indexName="shop_travel";type = "travel" ;break;
-            case 4 : indexName="shop_specialty";type = "specialty" ;break;
-        }
+        Class clazz = null ;
 
         JsonReturnBody jsonReturnBody = new JsonReturnBody() ;
         jsonReturnBody.setType("getShopListPagingByDistance");
 
+        long startDateNumber =  parseDateToLongValue(startDate,jsonReturnBody);
+        long endDateNumber =  parseDateToLongValue(endDate,jsonReturnBody) ;
+
+        switch(productType){
+            case 1 : indexName="shop_hotel";type = "hotel" ;clazz = ShopHotelListVo.class ;break;
+            case 2 : indexName="shop_restaurant";type = "restaurant" ; clazz = ShopRestaurantListVo.class; break;
+            case 3 : indexName="shop_travel";type = "travel" ; clazz = ShopTravelListVo.class ; break;
+            case 4 : indexName="shop_specialty";type = "specialty" ; clazz = ShopSpecialtyListVo.class ;break;
+        }
+
+
+
         List<SortField> sortFields = new ArrayList<SortField>();
         sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
 
-        PageResult pageResult = shopListService.getShopListByDistance(indexName,type,resortId,sortFields,pageSize,page,productType,lon,lat);
+        PageResult pageResult = shopListService.getShopListByDistance(indexName,type,resortId,sortFields,clazz ,pageSize,page,productType,lon,lat,startDateNumber,endDateNumber);
         parsePageResult(pageResult,jsonReturnBody);
 
         return JsonUtil.toJsonString(jsonReturnBody);

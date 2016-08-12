@@ -5,6 +5,8 @@ import com.wanjia.utils.DateUtil;
 import com.wanjia.utils.JsonReturnBody;
 import com.wanjia.utils.JsonUtil;
 import com.wanjia.vo.ShopProductLogoVo;
+import com.wanjia.vo.ShopRecommendAndCommentNumberVo;
+import com.wanjia.vo.live.RoomBookVo;
 import com.wanjia.vo.live.RoomPictureVo;
 import com.wanjia.vo.live.RoomVo;
 import com.wanjia.vo.live.ShopRoomAttribute;
@@ -39,6 +41,12 @@ public class ShopInfoController {
     @Autowired
     ShopInfoService shopInfoService;
 
+    /**
+     * 获取店家的二级界面的logo
+     * @param shopId
+     * @param productType 1住2食3游4产
+     * @return
+     */
     @RequestMapping(value = "logo", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getShopLogoByProductType(long shopId, int productType) {
@@ -122,7 +130,7 @@ public class ShopInfoController {
         jsonReturnBody.setType("getShopRoomPic");
 
         try {
-            //包含了房间的属性信息，包括wifi，有窗，和住房注意事项
+            //获得房型的图片信息
             List<RoomPictureVo> roomPictureVos = shopInfoService.getShopRoomPictures(shopId,roomId) ;
             generateJsonReturnResult(roomPictureVos,jsonReturnBody) ;
         } catch (Exception e) {
@@ -351,7 +359,7 @@ public class ShopInfoController {
 
 
     /**
-     * 获得游的门票的备注
+     * 获得游的门票的备注 三级界面
      * @param shopId
      * @param  ticketId
      * @return
@@ -373,7 +381,7 @@ public class ShopInfoController {
     }
 
     /**
-     * 获得游的门票的须知
+     * 获得游的门票的须知 三级界面
      * @param  resortId
      * @return
      */
@@ -482,6 +490,115 @@ public class ShopInfoController {
         return JsonUtil.toJsonString(jsonReturnBody);
     }
 
+    /**
+     * 获得点店家住房不同日期的价格
+     * @param shopId
+     * @param roomId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @RequestMapping(value = "getRoomPriceByDateRange", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopRoomPriceByDateRange(long shopId,long roomId,String startDate,String endDate) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getShopRoomPriceByDateRange");
+
+        try {
+            long startDateNum = DateUtil.parseDateToLongValue(startDate);
+            long endDateNum = DateUtil.parseDateToLongValue(endDate) ;
+
+            Double  totalPrice  = shopInfoService.getRoomTotalPriceDuringDateRange(shopId,roomId,startDateNum,endDateNum);
+            generateJsonReturnResult(totalPrice,jsonReturnBody);
+        } catch (Exception e) {
+            generateJsonReturnResultException(e,jsonReturnBody);
+        }
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+    /**
+     * 获得点店家住房不同日期已经预订的房间数
+     * @param shopId
+     * @param roomId
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    @RequestMapping(value = "getRoomBookInfoByDateRange", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopRoomBookInfoByDateRange(long shopId,long roomId,String startDate,String endDate) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getShopRoomBookInfoByDateRange");
+
+        try {
+            long startDateNum = DateUtil.parseDateToLongValue(startDate);
+            long endDateNum = DateUtil.parseDateToLongValue(endDate) ;
+
+            List<RoomBookVo> roomBookVos  = shopInfoService.getRoomBookInfoDuringDateRange(shopId,roomId,startDateNum,endDateNum);
+            generateJsonReturnResult(roomBookVos,jsonReturnBody);
+        } catch (Exception e) {
+            generateJsonReturnResultException(e,jsonReturnBody);
+        }
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+    /**
+     * 获得店家门票导游特色游的不同日期的价格
+     * @param shopId
+     * @param id 导游 门票 特色游的id
+     * @param travelType 1门票2导游3农家特色游
+     * @param dateTime
+     * @return
+     */
+    @RequestMapping(value = "getTravelPrice", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopTravelPrice(long shopId,long id,int travelType ,String dateTime) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getShopTravelPrice");
+
+        try {
+            long dateTimeNum = DateUtil.parseDateToLongValue(dateTime);
+            String suffix  = shopId+"_"+id ;
+            String key = "" ;
+            if(travelType == 1){
+                key = "shop_travel_ticket_price_"+suffix;
+            }else if(travelType == 2){
+                key = "shop_travel_guide_price_"+suffix ;
+            }else if(travelType == 3){
+                key =  "shop_travel_familyactivity_price_"+suffix ;
+            }
+
+            Double  totalPrice  = shopInfoService.getTravelPrice(key,dateTimeNum) ;
+            generateJsonReturnResult(totalPrice,jsonReturnBody);
+        } catch (Exception e) {
+            generateJsonReturnResultException(e,jsonReturnBody);
+        }
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+    //TODO  获得店家指定日期导游的预订情况
+    @RequestMapping(value = "getTravelGuideBookInfo", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public String getShopTravelGuideBookInfo(long shopId,long guideId,String dateTime) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getTravelGuideBookInfo");
+
+        try {
+            long dateTimeNum = DateUtil.parseDateToLongValue(dateTime);
+
+            GuideBookVo guideBookVo    = shopInfoService.getShopTravelGuideBookInfoShopId(shopId,guideId,dateTimeNum) ;
+            generateJsonReturnResult(guideBookVo,jsonReturnBody);
+        } catch (Exception e) {
+            generateJsonReturnResultException(e,jsonReturnBody);
+        }
+        return JsonUtil.toJsonString(jsonReturnBody);
+    }
+
+
+
 
     private void generateJsonReturnResult(Object result , JsonReturnBody jsonReturnBody){
 
@@ -521,6 +638,54 @@ public class ShopInfoController {
         }
 
      }
+
+
+    /**
+     * 获得店家住食游产的好评数和评论数
+     * @param shopId
+     * @param type  1住 2食 3游 4产
+     * @return
+     */
+    @RequestMapping(value = "getRecommendAndCommentNumber", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public JsonReturnBody getShopRecommendAndCommentNumber(long shopId,int type) {
+
+        JsonReturnBody jsonReturnBody = new JsonReturnBody();
+        jsonReturnBody.setType("getShopRecommendAndCommentNumber");
+        String indexname = "" ;
+        String indextype = "" ;
+
+
+
+        switch (type){
+
+            case 1 : indexname = "shop_hotel" ; indextype = "hotel" ; break;
+            case 2 : indexname = "shop_restaurant" ; indextype = "restaurant" ; break;
+            case 3 : indexname = "shop_travel" ; indextype = "travel" ; break;
+            case 4 : indexname = "shop_specialty" ; indextype = "specialty" ; break;
+        }
+
+        if(indexname.equals("") || indextype.equals("")){
+            jsonReturnBody.setCode(2);
+            jsonReturnBody.setMessage("input parameter error,please check it !!");
+        }else{
+            try {
+                ShopRecommendAndCommentNumberVo shopRecommendAndCommentNumberVo =  shopInfoService.getShopRecommendAndCommentNumber(shopId,indexname,indextype) ;
+                if(shopRecommendAndCommentNumberVo != null){
+                    jsonReturnBody.setCode(1);
+                    jsonReturnBody.setMessage(shopRecommendAndCommentNumberVo);
+                }else{
+                    jsonReturnBody.setCode(-2);
+                    jsonReturnBody.setMessage("shop comment and recommend  number is null please check it ！！！");
+                }
+
+            } catch (Exception e) {
+                generateJsonReturnResultException(e,jsonReturnBody);
+            }
+        }
+        return jsonReturnBody;
+    }
+
 }
 
 

@@ -2,7 +2,7 @@ package com.wanjia.vo;
 
 import java.util.Date;
 
-/**
+/** 店家住房的vo信息
  * Created by hsb11289 on 2016/6/28.
  */
 public class ShopHotelListVo extends ShopListBaseVo implements Comparable<ShopHotelListVo> {

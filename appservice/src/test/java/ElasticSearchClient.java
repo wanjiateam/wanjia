@@ -30,8 +30,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.common.geo.GeoDistance;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.unit.DistanceUnit;
 import org.elasticsearch.index.deletionpolicy.SnapshotIndexCommit;
 import org.elasticsearch.index.engine.Engine;
 import org.elasticsearch.index.engine.EngineException;
@@ -48,6 +50,8 @@ import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.AggregationBuilders;
 import org.elasticsearch.search.aggregations.bucket.terms.Terms;
 import org.elasticsearch.search.aggregations.metrics.sum.Sum;
+import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -343,6 +347,7 @@ public class ElasticSearchClient {
             vo.setShopPic("http://www.whateverblake.com/shoplist_"+i+".jpg");
             //vo.setTravelTicketLowestPrice(random.nextInt(300));
             vo.setTravelTicketState(1);
+            vo.setTravelTicketLowestPrice(random.nextInt(500));
 
             if(i % 3 == 0){
                 vo.setTravelGuideLowestPrice(random.nextInt(200));
@@ -1027,7 +1032,7 @@ public class ElasticSearchClient {
                 vo.setResortId(i);
                 vo.setResortName("九华山");
                 vo.setTicketType(ticketType[j-1]);
-                vo.setTicketVo(j);
+                vo.setTicketId(j);
                 vo.setMaxBookNumber(random.nextInt(30));
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_ticket_item_"+j+".jpg");
 
@@ -1171,6 +1176,35 @@ public class ElasticSearchClient {
                 }
             }
         }
+
+    }
+
+
+
+
+    @Test
+    public void testGeo(){
+
+        String indexname  = "shop_travel" ;
+        String type = "travel" ;
+        double lon = 97;
+        double lat = 52 ;
+        QueryBuilder geoQueryBuilder = QueryBuilders.geoDistanceQuery("location").lon(lon).lat(lat).
+                                                    distance(10, DistanceUnit.KILOMETERS).geoDistance(GeoDistance.PLANE);
+        GeoDistanceSortBuilder geoDistanceSortBuilder =  SortBuilders.geoDistanceSort("location").order(SortOrder.ASC).point(lat,lon)
+                .unit(DistanceUnit.KILOMETERS) ;
+
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(indexname).setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setTypes(type).setQuery(geoQueryBuilder);
+        searchRequestBuilder.addSort(geoDistanceSortBuilder) ;
+
+        SearchResponse response = searchRequestBuilder.execute().actionGet() ;
+        SearchHits searchHits = response.getHits();
+        long totalHits = searchHits.totalHits();
+        System.out.println("totalhits is "+totalHits);
+
+
+
 
     }
 

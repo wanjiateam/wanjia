@@ -1,6 +1,8 @@
 package com.wanjia.service;
 
 import com.wanjia.vo.ShopProductLogoVo;
+import com.wanjia.vo.ShopRecommendAndCommentNumberVo;
+import com.wanjia.vo.live.RoomBookVo;
 import com.wanjia.vo.live.RoomPictureVo;
 import com.wanjia.vo.live.RoomVo;
 import com.wanjia.vo.live.ShopRoomAttribute;
@@ -26,6 +28,8 @@ public interface ShopInfoService {
     public List<CourseVo> getShopCourseVoByShopId(long shopId, long bookDate , String indexName, String esType) throws Exception ;
     public List<SpecialtyVo> getShopSpecialtyVoByShopId(long shopId, String indexName, String esType) throws Exception ;
     public TravelVo getShopTravelVoByShopId(long shopId,long startDate , long endDate) throws Exception ;
+    public GuideBookVo getShopTravelGuideBookInfoShopId(long shopId,long guideId ,long dateTime) throws Exception ;
+
     public ShopRoomAttribute getShopRoomDetailInfo(long shopId,long roomId) throws Exception ;
     public List<RoomPictureVo> getShopRoomPictures(long shopId, long roomId) throws Exception ;
     public List<ShopCourseDetailInfoVo> getShopCourseDetailInfo(long shopId, long courseId) throws Exception ;
@@ -42,8 +46,12 @@ public interface ShopInfoService {
     public List<SpecialtyNoteVo> getShopSpecialtyNote(long shopId,long specialtyId)  throws Exception ;
     public List<GuidePictureVo> getShopGuidePicture(long shopId, long guideId) throws Exception ;
     public GuideNoteVo getShopGuideNotice(long shopId, long guideId) throws Exception ;
+    public double getRoomTotalPriceDuringDateRange(long shopId, long roomId,long startDate,long endDate) throws Exception ;
+    public List<RoomBookVo> getRoomBookInfoDuringDateRange(long shopId, long roomId, long startDate, long endDate) throws Exception ;
 
+    public double getTravelPrice(String key,long dateTime) throws Exception ;
 
+    public ShopRecommendAndCommentNumberVo getShopRecommendAndCommentNumber(long shopId, String indexname, String indextype) throws Exception ;
 
 
     }

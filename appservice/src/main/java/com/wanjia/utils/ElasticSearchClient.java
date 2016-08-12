@@ -1,6 +1,7 @@
 package com.wanjia.utils;
 
 import com.wanjia.vo.ESAggResultVo;
+import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
@@ -21,7 +22,9 @@ import org.elasticsearch.search.sort.GeoDistanceSortBuilder;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by blake on 2016/6/22.
@@ -110,6 +113,29 @@ public class ElasticSearchClient {
             convertJsonToObject(searchHits,clazz,objectList);
         }
         pageResult.setResult(objectList);
+    }
+
+
+    public Map<String,Object> queryUniqueColumnSpecificField(QueryBuilder queryBuilder, QueryBuilder postFilter , List<String> fields , String index, String type) throws Exception{
+
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(index).setTypes(type).setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setQuery(queryBuilder);
+
+        Map<String,Object> fieldValueMap = new HashMap<String,Object>();
+
+        for(String field : fields){
+            searchRequestBuilder.addField(field);
+        }
+
+        SearchResponse searchResponse = searchRequestBuilder.execute().actionGet();
+
+        SearchHits searchHits = searchResponse.getHits();
+        for(SearchHit hit : searchHits.getHits()){
+            for(String field : fields){
+                fieldValueMap.put(field,hit.field(field).getValue());
+            }
+        }
+        return fieldValueMap ;
     }
 
 

@@ -578,7 +578,9 @@ public class ShopInfoController {
         }
         return JsonUtil.toJsonString(jsonReturnBody);
     }
-    //TODO  获得店家指定日期导游的预订情况
+
+
+
     @RequestMapping(value = "getTravelGuideBookInfo", method = RequestMethod.POST, produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getShopTravelGuideBookInfo(long shopId,long guideId,String dateTime) {
@@ -685,6 +687,8 @@ public class ShopInfoController {
         }
         return jsonReturnBody;
     }
+
+
 
 }
 

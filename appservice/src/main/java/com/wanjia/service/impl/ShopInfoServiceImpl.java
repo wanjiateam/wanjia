@@ -436,7 +436,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                 GuideBookVo guideBookVo = getShopTravelGuideBookInfoShopId(shopId,guideId,startDate) ;
 
                 if(guideBookVo  != null ){
-                    int allowBookNumber = guideNumber - guideBookVo.getBookRoomNumber() ;
+                    int allowBookNumber = guideNumber - guideBookVo.getBookNumber() ;
                     if(allowBookNumber <= 0 ){
                                  allowBookNumber = 0  ;
                     }
@@ -719,5 +719,74 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         }
 
         return shopRecommendAndCommentNumberVo;
+    }
+
+
+    @Override
+    public boolean checkRoomVoExistById(String id) throws Exception{
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_ROOM_INDEX,ESIndexAndTypeConstant.SHOP_ROOM_TYPE,id);
+    }
+
+    @Override
+    public boolean checkCourseVoExistById(String id) throws Exception{
+
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_COURSE_INDEX,ESIndexAndTypeConstant.SHOP_COURSE_TYPE,id);
+    }
+
+    @Override
+    public boolean checkSpecialtyVoExistById(String id) throws Exception{
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_SPECIALTY_ITEM_INDEX,ESIndexAndTypeConstant.SHOP_SPECIALTY_ITEM_TYPE,id);
+    }
+
+    @Override
+    public boolean checkTicketVoExistById(String id) throws Exception{
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_TRAVEL_TICKET_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_TICKET_TYPE,id);
+    }
+
+    @Override
+    public boolean checkGuideVoExistById(String id) throws Exception{
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_TRAVEL_GUIDE_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_GUIDE_TYPE,id);
+    }
+
+    @Override
+    public boolean checkFamilyActivityVoByExistId(String id) throws Exception{
+        return elasticSearchClient.checkEntityExist(ESIndexAndTypeConstant.SHOP_TRAVEL_FAMILYACTIVITY_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_FAMILYACTIVITY_TYPE,id);
+    }
+
+
+    @Override
+    public List<RoomVo> getRoomVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_ROOM_INDEX,ESIndexAndTypeConstant.SHOP_ROOM_TYPE,RoomVo.class);
+    }
+
+    @Override
+    public List<CourseVo> getCourseVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_COURSE_INDEX,ESIndexAndTypeConstant.SHOP_COURSE_INDEX,CourseVo.class);
+    }
+
+    @Override
+    public List<SpecialtyVo> getSpecialtyVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_SPECIALTY_ITEM_INDEX,ESIndexAndTypeConstant.SHOP_SPECIALTY_ITEM_TYPE,SpecialtyVo.class);
+    }
+
+    @Override
+    public List<TicketVo> getTicketVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_TRAVEL_TICKET_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_TICKET_TYPE,TicketVo.class);
+    }
+
+    @Override
+    public List<GuideVo> getGuideVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_TRAVEL_GUIDE_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_GUIDE_TYPE,GuideVo.class);
+    }
+
+    @Override
+    public List<FamilyActivityVo> getFamilyActivityVoListById(Set<String> ids) throws Exception {
+        QueryBuilder queryBuilder = QueryBuilders.idsQuery().addIds(ids);
+        return elasticSearchClient.queryDataFromEsWithoutPaging(queryBuilder,null,ESIndexAndTypeConstant.SHOP_TRAVEL_FAMILYACTIVITY_INDEX,ESIndexAndTypeConstant.SHOP_TRAVEL_FAMILYACTIVITY_TYPE,FamilyActivityVo.class);
     }
 }

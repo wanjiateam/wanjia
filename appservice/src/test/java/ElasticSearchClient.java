@@ -600,7 +600,7 @@ public class ElasticSearchClient {
                 vo.setRoomDescribe("自然，清新，梦回故里");
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room").
-                        setType("room").setId(String.valueOf(id++)).
+                        setType("room").setId(String.valueOf(i+"_"+j)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -758,7 +758,7 @@ public class ElasticSearchClient {
                     vo.setCoursePrice(random.nextInt(300));
                     vo.setSpicyLevel(j % 3);
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course").
-                            setType("course").setId(String.valueOf(id++)).
+                            setType("course").setId(String.valueOf(i+"_"+j)).
                             setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -915,7 +915,7 @@ public class ElasticSearchClient {
                 vo.setSpecialtyPictureUrl("http://www.whateverblake.com/shop_specialty_item_"+j+".jpg");
                 vo.setSpecialtyNumber(random.nextInt(100));
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_item").
-                        setType("specialty").setId(String.valueOf(id++)).
+                        setType("specialty").setId(String.valueOf(i+"_"+j)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -1037,7 +1037,7 @@ public class ElasticSearchClient {
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_ticket_item_"+j+".jpg");
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticket").
-                        setType("ticket").setId(String.valueOf(id++)).
+                        setType("ticket").setId(i+"_"+j).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -1054,7 +1054,7 @@ public class ElasticSearchClient {
                 vo.setTourGuardPrice(random.nextInt(300));
                 vo.setGuideNumber(random.nextInt(10));
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide").
-                        setType("guide").setId(String.valueOf(id++)).
+                        setType("guide").setId(String.valueOf(i+"_"+j)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -1075,7 +1075,7 @@ public class ElasticSearchClient {
                 vo.setMaxBookNumber(random.nextInt(20));
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_familyactivity").
-                        setType("familyactivity").setId(String.valueOf(id++)).
+                        setType("familyactivity").setId(String.valueOf(i+"_"+j)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
             }
 
@@ -1117,7 +1117,7 @@ public class ElasticSearchClient {
                     long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
                     vo.setBookDate(dateTime1Str);
                     vo.setBookDateLongValue(timevalue);
-                    vo.setBookRoomNumber(random.nextInt(5));
+                    vo.setBookNumber(random.nextInt(5));
 
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide_book").
                             setType("book").setId(String.valueOf(id++)).

@@ -410,4 +410,27 @@ public class RedisClient {
         }
     }
 
+
+    @Test
+    public void getAllHashKeys(){
+        String key = "shopCart_1";
+        Set<String> keys = jedis.hkeys(key);
+        System.out.println(keys.size());
+
+        for(String str : keys){
+            System.out.println(str);
+        }
+        //room_2016-7-9_2016-7-10_1
+    }
+
+
+    @Test
+    public void setIdExpired(){
+        String key = "offline_live_1";
+       jedis.hset(key,"1_1","2016-8-09");
+    }
+
+
+
+
 }

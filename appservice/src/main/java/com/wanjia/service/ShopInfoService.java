@@ -53,5 +53,20 @@ public interface ShopInfoService {
 
     public ShopRecommendAndCommentNumberVo getShopRecommendAndCommentNumber(long shopId, String indexname, String indextype) throws Exception ;
 
+    public  boolean checkRoomVoExistById(String id) throws Exception;
+    public  boolean checkCourseVoExistById(String id) throws Exception;
+    public  boolean checkSpecialtyVoExistById(String id) throws Exception;
+    public  boolean checkTicketVoExistById(String id) throws Exception;
+    public  boolean checkGuideVoExistById(String id) throws Exception;
+    public  boolean checkFamilyActivityVoByExistId(String id) throws Exception;
 
-    }
+    public  List<RoomVo> getRoomVoListById(Set<String> ids) throws Exception;
+    public  List<CourseVo> getCourseVoListById(Set<String> ids) throws Exception;
+    public  List<SpecialtyVo> getSpecialtyVoListById(Set<String> ids) throws Exception;
+    public  List<TicketVo> getTicketVoListById(Set<String> ids) throws Exception;
+    public  List<GuideVo> getGuideVoListById(Set<String> ids) throws Exception;
+    public  List<FamilyActivityVo> getFamilyActivityVoListById(Set<String> ids) throws Exception;
+
+
+
+}

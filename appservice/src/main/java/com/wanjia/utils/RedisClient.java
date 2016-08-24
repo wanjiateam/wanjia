@@ -14,6 +14,7 @@ public class RedisClient {
 
     private String redisIp;
     private int redisPort ;
+    private static int expireSeconds = 60*60*24*7 ;
 
     public RedisClient(String redisIp, int redisPort) {
         this.redisIp = redisIp;
@@ -30,16 +31,19 @@ public class RedisClient {
     }
 
     public String getValueByKey(String key){
-        return jedis.get(key) ;
+        String value = jedis.get(key) ;
+        return value ;
     }
 
 
     public boolean checkIfKeyExist(String key) throws Exception{
-       return  jedis.exists(key) ;
+        boolean exist =   jedis.exists(key) ;
+        return exist ;
     }
 
     public Set<String> getSortedSet(String key){
-        return   jedis.zrevrange(key,0,-1) ;
+        Set<String> values = jedis.zrevrange(key,0,-1);
+        return   values ;
     }
 
     public long setSortedSet(String key, Map<String,Double> values){
@@ -52,12 +56,14 @@ public class RedisClient {
         return result;
     }
     public String getHashFieldValue(String key,String field){
-        return jedis.hget(key,field) ;
+         String value = jedis.hget(key,field) ;
+        return value;
     }
 
 
     public long setHashValue(String key,String field,String value){
         long result = jedis.hset(key,field,value) ;
+        jedis.expire(key,expireSeconds) ;
         return result ;
 
     }
@@ -66,6 +72,21 @@ public class RedisClient {
         boolean result = jedis.hexists(key,field) ;
         return result ;
     }
+
+    //Set 不会为null
+    public Set<String> getAllHashKeys(String key){
+        Set<String> keys = jedis.hkeys(key);
+        return keys ;
+    }
+
+    public long delHashKey(String key,String... field){
+         long affectNumber  = jedis.hdel(key,field);
+         return  affectNumber ;
+    }
+
+
+
+
 
 
 }

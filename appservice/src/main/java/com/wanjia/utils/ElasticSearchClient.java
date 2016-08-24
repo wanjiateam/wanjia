@@ -3,6 +3,8 @@ package com.wanjia.utils;
 import com.wanjia.vo.ESAggResultVo;
 import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
@@ -183,6 +185,16 @@ public class ElasticSearchClient {
             Object obj =  JsonUtil.toObject(hit.getSourceAsString(),clazz);
             results.add(obj) ;
         }
+
+    }
+
+
+    public boolean checkEntityExist(String index,String type,String id){
+
+        GetRequest getRequest = new GetRequest(index,type,id);
+        GetResponse getResponse =  client.get(getRequest).actionGet() ;
+
+        return getResponse.isExists() ;
 
     }
 

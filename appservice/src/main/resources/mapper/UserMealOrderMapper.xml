@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanjia.dao.UserMealOrderMapper">
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserMealOrder">
+    <constructor>
+      <idArg column="orderId" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="pOrderId" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="shopId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="price" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="mealType" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="mealDate" javaType="java.util.Date" jdbcType="DATE" />
+      <arg column="createDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="isComment" javaType="java.lang.Boolean" jdbcType="BIT" />
+      <arg column="isRemark" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="orderState" javaType="java.lang.Boolean" jdbcType="BIT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    orderId, pOrderId, shopId, price, mealType, mealDate, createDate, isComment, isRemark, 
+    orderState
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_meal_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from wj_user_order_meal_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserMealOrder">
+    insert into wj_user_order_meal_info (orderId, pOrderId, shopId, 
+      price, mealType, mealDate, 
+      createDate, isComment, isRemark, 
+      orderState)
+    values (#{orderId,jdbcType=VARCHAR}, #{pOrderId,jdbcType=VARCHAR}, #{shopId,jdbcType=BIGINT}, 
+      #{price,jdbcType=DOUBLE}, #{mealType,jdbcType=TINYINT}, #{mealDate,jdbcType=DATE}, 
+      #{createDate,jdbcType=TIMESTAMP}, #{isComment,jdbcType=BIT}, #{isRemark,jdbcType=TINYINT}, 
+      #{orderState,jdbcType=BIT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserMealOrder">
+    insert into wj_user_order_meal_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        orderId,
+      </if>
+      <if test="pOrderId != null">
+        pOrderId,
+      </if>
+      <if test="shopId != null">
+        shopId,
+      </if>
+      <if test="price != null">
+        price,
+      </if>
+      <if test="mealType != null">
+        mealType,
+      </if>
+      <if test="mealDate != null">
+        mealDate,
+      </if>
+      <if test="createDate != null">
+        createDate,
+      </if>
+      <if test="isComment != null">
+        isComment,
+      </if>
+      <if test="isRemark != null">
+        isRemark,
+      </if>
+      <if test="orderState != null">
+        orderState,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="pOrderId != null">
+        #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null">
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="price != null">
+        #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="mealType != null">
+        #{mealType,jdbcType=TINYINT},
+      </if>
+      <if test="mealDate != null">
+        #{mealDate,jdbcType=DATE},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isComment != null">
+        #{isComment,jdbcType=BIT},
+      </if>
+      <if test="isRemark != null">
+        #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="orderState != null">
+        #{orderState,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserMealOrder">
+    update wj_user_order_meal_info
+    <set>
+      <if test="pOrderId != null">
+        pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null">
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="price != null">
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="mealType != null">
+        mealType = #{mealType,jdbcType=TINYINT},
+      </if>
+      <if test="mealDate != null">
+        mealDate = #{mealDate,jdbcType=DATE},
+      </if>
+      <if test="createDate != null">
+        createDate = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="isComment != null">
+        isComment = #{isComment,jdbcType=BIT},
+      </if>
+      <if test="isRemark != null">
+        isRemark = #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="orderState != null">
+        orderState = #{orderState,jdbcType=BIT},
+      </if>
+    </set>
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserMealOrder">
+    update wj_user_order_meal_info
+    set pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      shopId = #{shopId,jdbcType=BIGINT},
+      price = #{price,jdbcType=DOUBLE},
+      mealType = #{mealType,jdbcType=TINYINT},
+      mealDate = #{mealDate,jdbcType=DATE},
+      createDate = #{createDate,jdbcType=TIMESTAMP},
+      isComment = #{isComment,jdbcType=BIT},
+      isRemark = #{isRemark,jdbcType=TINYINT},
+      orderState = #{orderState,jdbcType=BIT}
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>

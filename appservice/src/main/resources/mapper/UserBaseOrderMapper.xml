@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanjia.dao.UserBaseOrderMapper">
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserBaseOrder">
+    <constructor>
+      <idArg column="orderId" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="userId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="totalMoney" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="createTime" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="shopIds" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="orderState" javaType="java.lang.Byte" jdbcType="TINYINT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    orderId, userId, totalMoney, createTime, shopIds, orderState
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from wj_user_order_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserBaseOrder">
+    insert into wj_user_order_info (orderId, userId, totalMoney, 
+      createTime, shopIds, orderState
+      )
+    values (#{orderId,jdbcType=VARCHAR}, #{userId,jdbcType=BIGINT}, #{totalMoney,jdbcType=DOUBLE}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{shopIds,jdbcType=VARCHAR}, #{orderState,jdbcType=TINYINT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserBaseOrder">
+    insert into wj_user_order_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        orderId,
+      </if>
+      <if test="userId != null">
+        userId,
+      </if>
+      <if test="totalMoney != null">
+        totalMoney,
+      </if>
+      <if test="createTime != null">
+        createTime,
+      </if>
+      <if test="shopIds != null">
+        shopIds,
+      </if>
+      <if test="orderState != null">
+        orderState,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="orderId != null">
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="totalMoney != null">
+        #{totalMoney,jdbcType=DOUBLE},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shopIds != null">
+        #{shopIds,jdbcType=VARCHAR},
+      </if>
+      <if test="orderState != null">
+        #{orderState,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserBaseOrder">
+    update wj_user_order_info
+    <set>
+      <if test="userId != null">
+        userId = #{userId,jdbcType=BIGINT},
+      </if>
+      <if test="totalMoney != null">
+        totalMoney = #{totalMoney,jdbcType=DOUBLE},
+      </if>
+      <if test="createTime != null">
+        createTime = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="shopIds != null">
+        shopIds = #{shopIds,jdbcType=VARCHAR},
+      </if>
+      <if test="orderState != null">
+        orderState = #{orderState,jdbcType=TINYINT},
+      </if>
+    </set>
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserBaseOrder">
+    update wj_user_order_info
+    set userId = #{userId,jdbcType=BIGINT},
+      totalMoney = #{totalMoney,jdbcType=DOUBLE},
+      createTime = #{createTime,jdbcType=TIMESTAMP},
+      shopIds = #{shopIds,jdbcType=VARCHAR},
+      orderState = #{orderState,jdbcType=TINYINT}
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+
+</mapper>

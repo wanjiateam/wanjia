@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.RoomBookedInfoMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.book.RoomBookedInfo" >
+    <constructor >
+      <idArg column="bookId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="roomId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="shopId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="bookDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="bookNumber" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="number" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="version" jdbcType="BIGINT" javaType="java.lang.Long" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    bookId, roomId, shopId, bookDate, bookNumber, number, version
+  </sql>
+
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_resource_house_roombook_info
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </select>
+
+  <select id="selectByShopIdRoomIdAndDate" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from wj_resource_house_roombook_info
+    where shopId = #{shopId,jdbcType=BIGINT} AND
+    roomId = #{roomId,jdbcType=BIGINT} AND
+    bookDate = #{bookDate,jdbcType=DATE}
+  </select>
+
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from wj_resource_house_roombook_info
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </delete>
+
+  <insert id="insert" parameterType="com.wanjia.entity.order.book.RoomBookedInfo" >
+    insert into wj_resource_house_roombook_info (bookId, roomId, shopId, 
+      bookDate, bookNumber, number, 
+      version)
+    values (#{bookId,jdbcType=BIGINT}, #{roomId,jdbcType=BIGINT}, #{shopId,jdbcType=BIGINT}, 
+      #{bookDate,jdbcType=DATE}, #{bookNumber,jdbcType=INTEGER}, #{number,jdbcType=INTEGER}, 
+      #{version,jdbcType=BIGINT})
+  </insert>
+
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.book.RoomBookedInfo" >
+    insert into wj_resource_house_roombook_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="bookId != null" >
+        bookId,
+      </if>
+      <if test="roomId != null" >
+        roomId,
+      </if>
+      <if test="shopId != null" >
+        shopId,
+      </if>
+      <if test="bookDate != null" >
+        bookDate,
+      </if>
+      <if test="bookNumber != null" >
+        bookNumber,
+      </if>
+      <if test="number != null" >
+        number,
+      </if>
+      <if test="version != null" >
+        version,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="bookId != null" >
+        #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null" >
+        #{roomId,jdbcType=BIGINT},
+      </if>
+      <if test="shopId != null" >
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="bookDate != null" >
+        #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="bookNumber != null" >
+        #{bookNumber,jdbcType=INTEGER},
+      </if>
+      <if test="number != null" >
+        #{number,jdbcType=INTEGER},
+      </if>
+      <if test="version != null" >
+        #{version,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.book.RoomBookedInfo" >
+    update wj_resource_house_roombook_info
+    <set >
+      <if test="roomId != null" >
+        roomId = #{roomId,jdbcType=BIGINT},
+      </if>
+      <if test="shopId != null" >
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="bookDate != null" >
+        bookDate = #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="bookNumber != null" >
+        bookNumber = #{bookNumber,jdbcType=INTEGER},
+      </if>
+      <if test="number != null" >
+        number = #{number,jdbcType=INTEGER},
+      </if>
+      <if test="version != null" >
+        version = #{version,jdbcType=BIGINT},
+      </if>
+    </set>
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.book.RoomBookedInfo" >
+    update wj_resource_house_roombook_info
+    set roomId = #{roomId,jdbcType=BIGINT},
+      shopId = #{shopId,jdbcType=BIGINT},
+      bookDate = #{bookDate,jdbcType=DATE},
+      bookNumber = #{bookNumber,jdbcType=INTEGER},
+      number = #{number,jdbcType=INTEGER},
+      version = #{version,jdbcType=BIGINT}
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateRoomNumberById">
+    update wj_resource_house_roombook_info
+    set
+    bookNumber = #{newBookedNumber,jdbcType=INTEGER},
+    version = {newVersion,jdbcType=BIGINT}
+    where bookId = #{bookId,jdbcType=BIGINT} AND version = #{version,jdbcType=BIGINT}
+  </update>
+
+
+</mapper>

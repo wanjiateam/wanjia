@@ -1,5 +1,6 @@
 package com.wanjia.service;
 
+import com.wanjia.exceptions.RedisException;
 import com.wanjia.vo.ShopProductLogoVo;
 import com.wanjia.vo.ShopRecommendAndCommentNumberVo;
 import com.wanjia.vo.live.RoomBookVo;
@@ -46,10 +47,11 @@ public interface ShopInfoService {
     public List<SpecialtyNoteVo> getShopSpecialtyNote(long shopId,long specialtyId)  throws Exception ;
     public List<GuidePictureVo> getShopGuidePicture(long shopId, long guideId) throws Exception ;
     public GuideNoteVo getShopGuideNotice(long shopId, long guideId) throws Exception ;
-    public double getRoomTotalPriceDuringDateRange(long shopId, long roomId,long startDate,long endDate) throws Exception ;
+    public double getRoomTotalPriceDuringDateRange(long shopId, long roomId,long startDate,long endDate) throws RedisException;
     public List<RoomBookVo> getRoomBookInfoDuringDateRange(long shopId, long roomId, long startDate, long endDate) throws Exception ;
+    public int  getRoomAllowBookNumberDuringDateRange(long shopId, long roomId, String startDate, String endDate) throws Exception ;
 
-    public double getTravelPrice(String key,long dateTime) throws Exception ;
+    public double getTravelPrice(String key,long dateTime) throws RedisException ;
 
     public ShopRecommendAndCommentNumberVo getShopRecommendAndCommentNumber(long shopId, String indexname, String indextype) throws Exception ;
 

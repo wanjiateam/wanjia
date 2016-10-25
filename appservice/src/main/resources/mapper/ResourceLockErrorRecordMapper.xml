@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanjia.dao.ResourceLockErrorRecordMapper">
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.book.ResourceLockErrorRecord">
+    <constructor>
+      <idArg column="errorId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="objectJson" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="productType" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="bookDate" javaType="java.util.Date" jdbcType="DATE" />
+      <arg column="insertDate" javaType="java.util.Date" jdbcType="DATE" />
+      <arg column="lockType" javaType="java.lang.Byte" jdbcType="TINYINT" />
+      <arg column="exceptionInfo" javaType="java.lang.String" jdbcType="VARCHAR" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    errorId, objectJson, productType, bookDate, insertDate, lockType, exceptionInfo
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from wj_resource_lock_error_info
+    where errorId = #{errorId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from wj_resource_lock_error_info
+    where errorId = #{errorId,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.book.ResourceLockErrorRecord">
+    insert into wj_resource_lock_error_info (errorId, objectJson, productType, 
+      bookDate, insertDate, lockType, 
+      exceptionInfo)
+    values (#{errorId,jdbcType=BIGINT}, #{objectJson,jdbcType=VARCHAR}, #{productType,jdbcType=INTEGER}, 
+      #{bookDate,jdbcType=DATE}, #{insertDate,jdbcType=DATE}, #{lockType,jdbcType=TINYINT}, 
+      #{exceptionInfo,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.book.ResourceLockErrorRecord">
+    insert into wj_resource_lock_error_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="errorId != null">
+        errorId,
+      </if>
+      <if test="objectJson != null">
+        objectJson,
+      </if>
+      <if test="productType != null">
+        productType,
+      </if>
+      <if test="bookDate != null">
+        bookDate,
+      </if>
+      <if test="insertDate != null">
+        insertDate,
+      </if>
+      <if test="lockType != null">
+        lockType,
+      </if>
+      <if test="exceptionInfo != null">
+        exceptionInfo,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="errorId != null">
+        #{errorId,jdbcType=BIGINT},
+      </if>
+      <if test="objectJson != null">
+        #{objectJson,jdbcType=VARCHAR},
+      </if>
+      <if test="productType != null">
+        #{productType,jdbcType=INTEGER},
+      </if>
+      <if test="bookDate != null">
+        #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="insertDate != null">
+        #{insertDate,jdbcType=DATE},
+      </if>
+      <if test="lockType != null">
+        #{lockType,jdbcType=TINYINT},
+      </if>
+      <if test="exceptionInfo != null">
+        #{exceptionInfo,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.book.ResourceLockErrorRecord">
+    update wj_resource_lock_error_info
+    <set>
+      <if test="objectJson != null">
+        objectJson = #{objectJson,jdbcType=VARCHAR},
+      </if>
+      <if test="productType != null">
+        productType = #{productType,jdbcType=INTEGER},
+      </if>
+      <if test="bookDate != null">
+        bookDate = #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="insertDate != null">
+        insertDate = #{insertDate,jdbcType=DATE},
+      </if>
+      <if test="lockType != null">
+        lockType = #{lockType,jdbcType=TINYINT},
+      </if>
+      <if test="exceptionInfo != null">
+        exceptionInfo = #{exceptionInfo,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where errorId = #{errorId,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.book.ResourceLockErrorRecord">
+    update wj_resource_lock_error_info
+    set objectJson = #{objectJson,jdbcType=VARCHAR},
+      productType = #{productType,jdbcType=INTEGER},
+      bookDate = #{bookDate,jdbcType=DATE},
+      insertDate = #{insertDate,jdbcType=DATE},
+      lockType = #{lockType,jdbcType=TINYINT},
+      exceptionInfo = #{exceptionInfo,jdbcType=VARCHAR}
+    where errorId = #{errorId,jdbcType=BIGINT}
+  </update>
+
+</mapper>

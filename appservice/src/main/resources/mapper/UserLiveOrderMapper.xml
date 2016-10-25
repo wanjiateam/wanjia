@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.UserLiveOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserLiveOrder" >
+    <constructor >
+      <idArg column="orderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="pOrderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="shopId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="roomId" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="bookNumer" jdbcType="SMALLINT" javaType="java.lang.Short" />
+      <arg column="price" jdbcType="DOUBLE" javaType="java.lang.Double" />
+      <arg column="createDate" jdbcType="TIMESTAMP" javaType="java.util.Date" />
+      <arg column="startDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="endDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="isRemark" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="isComment" jdbcType="BIT" javaType="java.lang.Boolean" />
+      <arg column="orderState" jdbcType="BIT" javaType="java.lang.Boolean" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    orderId, pOrderId, shopId, roomId, bookNumer, price, createDate, startDate, endDate, 
+    isRemark, isComment, orderState
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_live_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from wj_user_order_live_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserLiveOrder" >
+    insert into wj_user_order_live_info (orderId, pOrderId, shopId, 
+      roomId, bookNumer, price, 
+      createDate, startDate, endDate, 
+      isRemark, isComment, orderState
+      )
+    values (#{orderId,jdbcType=VARCHAR}, #{pOrderId,jdbcType=VARCHAR}, #{shopId,jdbcType=BIGINT}, 
+      #{roomId,jdbcType=INTEGER}, #{bookNumer,jdbcType=SMALLINT}, #{price,jdbcType=DOUBLE}, 
+      #{createDate,jdbcType=TIMESTAMP}, #{startDate,jdbcType=DATE}, #{endDate,jdbcType=DATE}, 
+      #{isRemark,jdbcType=TINYINT}, #{isComment,jdbcType=BIT}, #{orderState,jdbcType=BIT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserLiveOrder" >
+    insert into wj_user_order_live_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        orderId,
+      </if>
+      <if test="pOrderId != null" >
+        pOrderId,
+      </if>
+      <if test="shopId != null" >
+        shopId,
+      </if>
+      <if test="roomId != null" >
+        roomId,
+      </if>
+      <if test="bookNumer != null" >
+        bookNumer,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="createDate != null" >
+        createDate,
+      </if>
+      <if test="startDate != null" >
+        startDate,
+      </if>
+      <if test="endDate != null" >
+        endDate,
+      </if>
+      <if test="isRemark != null" >
+        isRemark,
+      </if>
+      <if test="isComment != null" >
+        isComment,
+      </if>
+      <if test="orderState != null" >
+        orderState,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="pOrderId != null" >
+        #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null" >
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null" >
+        #{roomId,jdbcType=INTEGER},
+      </if>
+      <if test="bookNumer != null" >
+        #{bookNumer,jdbcType=SMALLINT},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="startDate != null" >
+        #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null" >
+        #{endDate,jdbcType=DATE},
+      </if>
+      <if test="isRemark != null" >
+        #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="isComment != null" >
+        #{isComment,jdbcType=BIT},
+      </if>
+      <if test="orderState != null" >
+        #{orderState,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserLiveOrder" >
+    update wj_user_order_live_info
+    <set >
+      <if test="pOrderId != null" >
+        pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null" >
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="roomId != null" >
+        roomId = #{roomId,jdbcType=INTEGER},
+      </if>
+      <if test="bookNumer != null" >
+        bookNumer = #{bookNumer,jdbcType=SMALLINT},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        createDate = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="startDate != null" >
+        startDate = #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null" >
+        endDate = #{endDate,jdbcType=DATE},
+      </if>
+      <if test="isRemark != null" >
+        isRemark = #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="isComment != null" >
+        isComment = #{isComment,jdbcType=BIT},
+      </if>
+      <if test="orderState != null" >
+        orderState = #{orderState,jdbcType=BIT},
+      </if>
+    </set>
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserLiveOrder" >
+    update wj_user_order_live_info
+    set pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      shopId = #{shopId,jdbcType=BIGINT},
+      roomId = #{roomId,jdbcType=INTEGER},
+      bookNumer = #{bookNumer,jdbcType=SMALLINT},
+      price = #{price,jdbcType=DOUBLE},
+      createDate = #{createDate,jdbcType=TIMESTAMP},
+      startDate = #{startDate,jdbcType=DATE},
+      endDate = #{endDate,jdbcType=DATE},
+      isRemark = #{isRemark,jdbcType=TINYINT},
+      isComment = #{isComment,jdbcType=BIT},
+      orderState = #{orderState,jdbcType=BIT}
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>

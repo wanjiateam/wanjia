@@ -1,5 +1,6 @@
 package com.wanjia.service.impl;
 
+import com.wanjia.exceptions.RedisException;
 import com.wanjia.service.ShopListService;
 import com.wanjia.utils.*;
 import com.wanjia.vo.*;
@@ -263,7 +264,7 @@ public class ShopListServiceImpl implements ShopListService{
 
     //根据点评，推荐等非价格的排序方式获得所有的店家，然后在根据店家的id去获得不同的价格
     @Override
-    public PageResult getShopTravelListByResort(String indexName, String type, long resortId, long startDate, long endDate, List<SortField> sortFields, int pageSize, int page, Class clazz, Integer landmarkId,String shopName) {
+    public PageResult getShopTravelListByResort(String indexName, String type, long resortId, long startDate, long endDate, List<SortField> sortFields, int pageSize, int page, Class clazz, Integer landmarkId,String shopName) throws RedisException{
 
         PageResult pageResult = getShopListByResort(indexName,type,resortId,startDate,endDate,sortFields,pageSize,page,clazz,landmarkId,shopName);
         getShopTravelShowPrice(pageResult,"shop_ticket_price_");
@@ -280,7 +281,7 @@ public class ShopListServiceImpl implements ShopListService{
      * @param prefixKey 门票 导游 农家自助游 价格在redis中的key的前缀
      */
     //一级界面展示的时候 店家游价格的获取方法（包括 导游 门票 农家自助游）
-    private  void getShopTravelShowPrice(PageResult pageResult,String prefixKey){
+    private  void getShopTravelShowPrice(PageResult pageResult,String prefixKey) throws RedisException{
 
         List<ShopTravelListVo> travelList = (List<ShopTravelListVo>)pageResult.getResult() ;
         for(ShopTravelListVo shopTravelListVo : travelList){

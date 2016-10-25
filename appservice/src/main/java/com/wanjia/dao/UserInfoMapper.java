@@ -1,29 +1,30 @@
 package com.wanjia.dao;
 
 import com.wanjia.entity.UserInfo;
+import com.wanjia.exceptions.MySqlException;
 
 import java.util.Map;
 
 public interface UserInfoMapper {
 
-    int deleteByPrimaryKey(Long uid);
+    int deleteByPrimaryKey(Long uid) throws MySqlException;
 
-    int insert(UserInfo record);
+    int insert(UserInfo record) throws MySqlException;
 
-    int insertSelective(UserInfo record);
+    int insertSelective(UserInfo record) throws MySqlException;
 
-    UserInfo selectByPrimaryKey(Long uid);
+    UserInfo selectByPrimaryKey(Long uid) throws MySqlException;
 
-    int updateByPrimaryKeySelective(UserInfo record);
+    int updateByPrimaryKeySelective(UserInfo record) throws MySqlException;
 
-    int updateByPrimaryKey(UserInfo record);
+    int updateByPrimaryKey(UserInfo record) throws MySqlException;
 
-    int checkIfPhoneNumberExist(String phoneNumber);
+    int checkIfPhoneNumberExist(String phoneNumber) throws MySqlException;
 
-    int checkIfUserExist(Map map);
+    int checkIfUserExist(Map map) throws MySqlException;
 
-    int userLogin(Map map) ;
+    int userLogin(Map map)  throws MySqlException;
 
-    void updateUserPassword(Map map) ;
+    void updateUserPassword(Map map) throws MySqlException ;
 
 }

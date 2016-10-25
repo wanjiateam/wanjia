@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanjia.dao.SpecialtyBookedInfoMapper">
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    <constructor>
+      <idArg column="id" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="specialtyId" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="shopId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="specialtyPrice" javaType="java.lang.Double" jdbcType="DOUBLE" />
+      <arg column="specialtyName" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="specialtyComment" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="specialtyPictureUrl" javaType="java.lang.String" jdbcType="VARCHAR" />
+      <arg column="createDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="updateDate" javaType="java.util.Date" jdbcType="TIMESTAMP" />
+      <arg column="specialNumber" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="specialUnit" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="bookedNumber" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="version" javaType="java.lang.Long" jdbcType="BIGINT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, specialtyId, shopId, specialtyPrice, specialtyName, specialtyComment, specialtyPictureUrl, 
+    createDate, updateDate, specialNumber, specialUnit, bookedNumber, version
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from wj_resource_specialproduct_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from wj_resource_specialproduct_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    insert into wj_resource_specialproduct_info (id, specialtyId, shopId, 
+      specialtyPrice, specialtyName, specialtyComment, 
+      specialtyPictureUrl, createDate, updateDate, 
+      specialNumber, specialUnit, bookedNumber, 
+      version)
+    values (#{id,jdbcType=BIGINT}, #{specialtyId,jdbcType=INTEGER}, #{shopId,jdbcType=BIGINT}, 
+      #{specialtyPrice,jdbcType=DOUBLE}, #{specialtyName,jdbcType=VARCHAR}, #{specialtyComment,jdbcType=VARCHAR}, 
+      #{specialtyPictureUrl,jdbcType=VARCHAR}, #{createDate,jdbcType=TIMESTAMP}, #{updateDate,jdbcType=TIMESTAMP}, 
+      #{specialNumber,jdbcType=BIGINT}, #{specialUnit,jdbcType=INTEGER}, #{bookedNumber,jdbcType=INTEGER}, 
+      #{version,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    insert into wj_resource_specialproduct_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="specialtyId != null">
+        specialtyId,
+      </if>
+      <if test="shopId != null">
+        shopId,
+      </if>
+      <if test="specialtyPrice != null">
+        specialtyPrice,
+      </if>
+      <if test="specialtyName != null">
+        specialtyName,
+      </if>
+      <if test="specialtyComment != null">
+        specialtyComment,
+      </if>
+      <if test="specialtyPictureUrl != null">
+        specialtyPictureUrl,
+      </if>
+      <if test="createDate != null">
+        createDate,
+      </if>
+      <if test="updateDate != null">
+        updateDate,
+      </if>
+      <if test="specialNumber != null">
+        specialNumber,
+      </if>
+      <if test="specialUnit != null">
+        specialUnit,
+      </if>
+      <if test="bookedNumber != null">
+        bookedNumber,
+      </if>
+      <if test="version != null">
+        version,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="specialtyId != null">
+        #{specialtyId,jdbcType=INTEGER},
+      </if>
+      <if test="shopId != null">
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="specialtyPrice != null">
+        #{specialtyPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="specialtyName != null">
+        #{specialtyName,jdbcType=VARCHAR},
+      </if>
+      <if test="specialtyComment != null">
+        #{specialtyComment,jdbcType=VARCHAR},
+      </if>
+      <if test="specialtyPictureUrl != null">
+        #{specialtyPictureUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="specialNumber != null">
+        #{specialNumber,jdbcType=BIGINT},
+      </if>
+      <if test="specialUnit != null">
+        #{specialUnit,jdbcType=INTEGER},
+      </if>
+      <if test="bookedNumber != null">
+        #{bookedNumber,jdbcType=INTEGER},
+      </if>
+      <if test="version != null">
+        #{version,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    update wj_resource_specialproduct_info
+    <set>
+      <if test="specialtyId != null">
+        specialtyId = #{specialtyId,jdbcType=INTEGER},
+      </if>
+      <if test="shopId != null">
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="specialtyPrice != null">
+        specialtyPrice = #{specialtyPrice,jdbcType=DOUBLE},
+      </if>
+      <if test="specialtyName != null">
+        specialtyName = #{specialtyName,jdbcType=VARCHAR},
+      </if>
+      <if test="specialtyComment != null">
+        specialtyComment = #{specialtyComment,jdbcType=VARCHAR},
+      </if>
+      <if test="specialtyPictureUrl != null">
+        specialtyPictureUrl = #{specialtyPictureUrl,jdbcType=VARCHAR},
+      </if>
+      <if test="createDate != null">
+        createDate = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateDate != null">
+        updateDate = #{updateDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="specialNumber != null">
+        specialNumber = #{specialNumber,jdbcType=BIGINT},
+      </if>
+      <if test="specialUnit != null">
+        specialUnit = #{specialUnit,jdbcType=INTEGER},
+      </if>
+      <if test="bookedNumber != null">
+        bookedNumber = #{bookedNumber,jdbcType=INTEGER},
+      </if>
+      <if test="version != null">
+        version = #{version,jdbcType=BIGINT},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    update wj_resource_specialproduct_info
+    set specialtyId = #{specialtyId,jdbcType=INTEGER},
+      shopId = #{shopId,jdbcType=BIGINT},
+      specialtyPrice = #{specialtyPrice,jdbcType=DOUBLE},
+      specialtyName = #{specialtyName,jdbcType=VARCHAR},
+      specialtyComment = #{specialtyComment,jdbcType=VARCHAR},
+      specialtyPictureUrl = #{specialtyPictureUrl,jdbcType=VARCHAR},
+      createDate = #{createDate,jdbcType=TIMESTAMP},
+      updateDate = #{updateDate,jdbcType=TIMESTAMP},
+      specialNumber = #{specialNumber,jdbcType=BIGINT},
+      specialUnit = #{specialUnit,jdbcType=INTEGER},
+      bookedNumber = #{bookedNumber,jdbcType=INTEGER},
+      version = #{version,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <select id="selectByShopIdAndSpecialtyId" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from wj_resource_specialproduct_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+
+
+  <update id="lockSpecialtyResource" parameterType="com.wanjia.entity.order.book.SpecialtyBookedInfo">
+    update wj_resource_specialproduct_info
+    set bookedNumber = #{bookedNumber,jdbcType=INTEGER},
+    version = #{newVersion,jdbcType=BIGINT}
+    where id = #{id,jdbcType=BIGINT} AND version = #{version,jdbcType=BIGINT}
+  </update>
+
+</mapper>

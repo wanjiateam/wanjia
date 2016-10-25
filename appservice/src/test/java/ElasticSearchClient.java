@@ -24,10 +24,13 @@ import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryAction;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryRequestBuilder;
 import org.elasticsearch.action.deletebyquery.DeleteByQueryResponse;
+import org.elasticsearch.action.get.GetRequest;
+import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.search.SearchRequestBuilder;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.action.search.SearchType;
+import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.geo.GeoDistance;
@@ -596,8 +599,15 @@ public class ElasticSearchClient {
                 vo.setRoomId(j);
                 vo.setRoomName("房间_"+j);
                 vo.setRoomSquare((start+8)+"-"+(start+15));
-                vo.setRoomType(j+1);
+                String roomType = "" ;
+                switch(j){
+                    case 0 : roomType = "双人床" ;break ;
+                    case  1 : roomType = "大圆床" ; break ;
+                    case 2 : roomType = "单人床" ; break ;
+                }
+                vo.setRoomType(roomType);
                 vo.setRoomDescribe("自然，清新，梦回故里");
+                vo.setShopName("店家_"+i);
 
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room").
                         setType("room").setId(String.valueOf(i+"_"+j)).
@@ -624,10 +634,10 @@ public class ElasticSearchClient {
         BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
 
         Random random = new Random() ;
-        int id = 1 ;
 
         for(int i = 1 ; i <=20 ; i++){
             for(int j=0; j <=2 ; j++){
+                int bookNumber = random.nextInt(100) ;
                 DateTime dateTime = new DateTime("2016-7-7") ;
                 for(int d =1 ; d <= 90 ; d++) {
                     RoomBookVo vo = new RoomBookVo() ;
@@ -639,9 +649,11 @@ public class ElasticSearchClient {
 
                     vo.setBookDate(dateTime1Str);
                     vo.setBookDateLongValue(timevalue);
-                    vo.setBookRoomNumber(random.nextInt(70));
+                    vo.setBookRoomNumber(bookNumber-random.nextInt(20));
+                    vo.setTotalRoomNumber(bookNumber);
+                    String id = i+"_"+j+"_"+dateTime1Str ;
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_room_book").
-                            setType("book").setId(String.valueOf(id++)).
+                            setType("book").setId(String.valueOf(id)).
                             setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
                 }
 
@@ -757,6 +769,7 @@ public class ElasticSearchClient {
                     vo.setCourseNumber(random.nextInt(200));
                     vo.setCoursePrice(random.nextInt(300));
                     vo.setSpicyLevel(j % 3);
+                    vo.setShopName("店家_"+i);
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course").
                             setType("course").setId(String.valueOf(i+"_"+j)).
                             setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
@@ -784,11 +797,11 @@ public class ElasticSearchClient {
         BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
 
         Random random = new Random() ;
-        int id = 1 ;
 
         for(int i = 1 ; i <=20 ; i++){
             for(int j=1; j <=20 ; j++){
                 DateTime dateTime = new DateTime("2016-7-7") ;
+                int totalNumber = random.nextInt(100) ;
                 for(int d =1 ; d <= 90 ; d++) {
                     CourseBookVo vo = new CourseBookVo() ;
                     vo.setShopId(i);
@@ -798,10 +811,11 @@ public class ElasticSearchClient {
                     long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
                     vo.setBuyDate(dateTime1Str);
                     vo.setBuyDateLongValue(timevalue);
-                    vo.setNumber(random.nextInt(100));
-
+                    vo.setTotalNumber(totalNumber);
+                    vo.setBookedNumber(totalNumber - random.nextInt(10));
+                    String id = i+"_"+j+"_"+dateTime1Str;
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_course_book").
-                            setType("book").setId(String.valueOf(id++)).
+                            setType("book").setId(id).
                             setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
                 }
 
@@ -907,6 +921,7 @@ public class ElasticSearchClient {
             for(int j=1; j <=20 ; j++){
                 SpecialtyVo vo = new SpecialtyVo() ;
                 vo.setShopId(i);
+                vo.setShopName("店家_"+i);
                 vo.setSpecialtyId(j);
                 vo.setSpecialtyComment("特产，来自大自然");
                 vo.setSpecialtyPrice(random.nextInt(200));
@@ -914,6 +929,7 @@ public class ElasticSearchClient {
                 vo.setWeightUnit(1);
                 vo.setSpecialtyPictureUrl("http://www.whateverblake.com/shop_specialty_item_"+j+".jpg");
                 vo.setSpecialtyNumber(random.nextInt(100));
+                vo.setSpecialtyName("特产_"+j);
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_specialty_item").
                         setType("specialty").setId(String.valueOf(i+"_"+j)).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
@@ -1032,10 +1048,11 @@ public class ElasticSearchClient {
                 vo.setResortId(i);
                 vo.setResortName("九华山");
                 vo.setTicketType(ticketType[j-1]);
+                vo.setTicketName(ticketType[j-1]);
                 vo.setTicketId(j);
                 vo.setMaxBookNumber(random.nextInt(30));
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_ticket_item_"+j+".jpg");
-
+                vo.setShopName("店家_"+i);
                 bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_ticket").
                         setType("ticket").setId(i+"_"+j).
                         setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
@@ -1044,6 +1061,7 @@ public class ElasticSearchClient {
             for(int j=1; j <=1 ; j++){
                 GuideVo vo = new GuideVo() ;
                 vo.setShopId(i);
+                vo.setShopName("店家_"+i);
                 vo.setResortId(i);
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_guide_item_"+j+".jpg");
                 vo.setGuideId(j);
@@ -1063,6 +1081,7 @@ public class ElasticSearchClient {
             for(int j=1; j <=3 ; j++){
                 FamilyActivityVo vo = new FamilyActivityVo() ;
                 vo.setShopId(i);
+                vo.setShopName("店家_"+i);
                 vo.setPicUrl("http://www.whateverblake.com/shop_travel_familyactivity_item_"+j+".jpg");
                 vo.setFamilyActiveId(j);
                 vo.setFamilyActivityName(familyActivity[j-1]);
@@ -1104,10 +1123,10 @@ public class ElasticSearchClient {
         BulkRequestBuilder bulkRequestBuilder =  client.prepareBulk() ;
 
         Random random = new Random() ;
-        int id = 1 ;
 
         for(int i = 1 ; i <=20 ; i++){
                 DateTime dateTime = new DateTime("2016-7-7") ;
+                int totalNumber = random.nextInt(10) ;
                 for(int d =1 ; d <= 90 ; d++) {
                     GuideBookVo vo = new GuideBookVo() ;
                     vo.setShopId(i);
@@ -1117,10 +1136,12 @@ public class ElasticSearchClient {
                     long timevalue = DateTimeFormat.forPattern("yyyy-MM-dd").parseDateTime(dateTime1Str).getMillis();
                     vo.setBookDate(dateTime1Str);
                     vo.setBookDateLongValue(timevalue);
-                    vo.setBookNumber(random.nextInt(5));
+                    vo.setTotalNumber(totalNumber);
+                    vo.setBookNumber(totalNumber- random.nextInt(3));
+                    String id = i+"_"+1+"_"+dateTime1Str;
 
                     bulkRequestBuilder.add(client.prepareIndex().setIndex("shop_travel_guide_book").
-                            setType("book").setId(String.valueOf(id++)).
+                            setType("book").setId(id).
                             setSource(JsonUtil.toJsonString(vo)).setOpType(IndexRequest.OpType.INDEX)) ;
 
 
@@ -1202,6 +1223,53 @@ public class ElasticSearchClient {
         SearchHits searchHits = response.getHits();
         long totalHits = searchHits.totalHits();
         System.out.println("totalhits is "+totalHits);
+
+    }
+
+
+    @Test
+    public void queryIds(){
+
+        String indexname  = "shop_course" ;
+        String type = "course" ;
+        List<String> ids = new ArrayList<String>();
+        ids.add("1_2");
+        ids.add("1_10");
+        QueryBuilder termsQuery = QueryBuilders.termsQuery("_id",ids);
+        SearchRequestBuilder searchRequestBuilder = client.prepareSearch(indexname).setSearchType(SearchType.QUERY_THEN_FETCH)
+                .setTypes(type).setQuery(termsQuery);
+        UpdateRequest updateRequest = new UpdateRequest("","","") ;
+        SearchResponse response = searchRequestBuilder.execute().actionGet() ;
+
+        SearchHits searchHits = response.getHits();
+        long totalHits = searchHits.totalHits();
+        for(SearchHit hit : searchHits){
+            Map map = hit.sourceAsMap();
+            System.out.println(hit.getSource());
+            System.out.println(hit.getId());
+            System.out.println(hit.getVersion());
+        }
+        System.out.println("totalhits is "+totalHits);
+
+    }
+
+    @Test
+     public void updateTest(){
+        String index = "shop_specialty_item" ;
+        String type = "specialty";
+
+        String id = "1_2";
+        GetRequest getRequest = new GetRequest(index,type,id) ;
+        GetResponse getResponse = client.get(getRequest).actionGet() ;
+        Map<String,Object> result = getResponse.getSource() ;
+        System.out.println(getResponse.getVersion());
+        result.put("specialtyNumber",124);
+
+        UpdateRequest updateRequest = new UpdateRequest(index,type,id).version(getResponse.getVersion());
+        updateRequest.doc(result) ;
+        client.update(updateRequest).actionGet() ;
+
+
 
 
 

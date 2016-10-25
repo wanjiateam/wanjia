@@ -2,6 +2,7 @@ package com.wanjia.service.impl;
 
 import com.wanjia.dao.UserInfoMapper;
 import com.wanjia.entity.UserInfo;
+import com.wanjia.exceptions.MySqlException;
 import com.wanjia.service.UserService;
 import com.wanjia.utils.MessageClient;
 import com.wanjia.utils.RedisClient;
@@ -54,7 +55,13 @@ public class UserServiceImpl implements UserService {
         int smsFlag = checkSmsCode(userInfo.getPhonenumber(),smsCode);
         if(smsFlag == 1){
 
-            int count =  userInfoMapper.checkIfPhoneNumberExist(userInfo.getPhonenumber());
+            int count = 0;
+            try {
+                count = userInfoMapper.checkIfPhoneNumberExist(userInfo.getPhonenumber());
+            } catch (MySqlException e) {
+                //todo
+                e.printStackTrace();
+            }
             //把token存到redis中
 
             StringBuilder token = new StringBuilder();
@@ -64,7 +71,12 @@ public class UserServiceImpl implements UserService {
             if(count != 0 ){
                 userReturnJson.setCode(0);
             }else{
-                userInfoMapper.insertSelective(userInfo);
+                try {
+                    userInfoMapper.insertSelective(userInfo);
+                } catch (MySqlException e) {
+                    //todo
+                    e.printStackTrace();
+                }
                 userReturnJson.setCode(1);
                 userReturnJson.setToken(encodeToken);
                 userReturnJson.setMessage("add user success");
@@ -92,7 +104,13 @@ public class UserServiceImpl implements UserService {
         Map map = new HashMap();
         map.put("type",type);
         map.put("token",token) ;
-        return userInfoMapper.checkIfUserExist(map);
+        try {
+            return userInfoMapper.checkIfUserExist(map);
+        } catch (MySqlException e) {
+            //todo
+            e.printStackTrace();
+        }
+        return 0 ;
     }
 
     /**
@@ -109,7 +127,15 @@ public class UserServiceImpl implements UserService {
         Map map  = new HashMap();
         map.put("token",token);
         map.put("passwd",passwd);
-        int retcode = userInfoMapper.userLogin(map) ;
+        map.put("type",type);
+
+        int retcode = 0;
+        try {
+            retcode = userInfoMapper.userLogin(map);
+        } catch (MySqlException e) {
+            e.printStackTrace();
+            //todo
+        }
         if(retcode != 0 ){
             userReturnJson.setCode(1);
             flag = 1 ;

@@ -1,5 +1,6 @@
 package com.wanjia.service.impl;
 
+import com.wanjia.exceptions.RedisException;
 import com.wanjia.service.ShopInfoService;
 import com.wanjia.utils.*;
 import com.wanjia.vo.HotelPriceVo;
@@ -105,7 +106,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                             break ;
                         }else{
                             int tmpAllowBookNumber =  roomNumber - bookNumber ;
-                            //如何某一天的可预订数小于以前的可预订数 那么按照这一天的可预订数作为最大可预订数
+                            //如何某一天的可预订数小于别的时间的可预订数 那么按照这一天的可预订数作为最大可预订数
                             if(tmpAllowBookNumber < allowBookNumber || allowBookNumber == -1){
                                 allowBookNumber = tmpAllowBookNumber ;
                             }
@@ -137,9 +138,52 @@ public class ShopInfoServiceImpl implements ShopInfoService{
         return roomBookVos ;
     }
 
+	/**
+     * 获得房间一定时间内的可预订数量
+     * @param shopId
+     * @param roomId
+     * @param startDate
+     * @param endDate
+     * @return
+     * @throws Exception
+     */
+    @Override
+    public int getRoomAllowBookNumberDuringDateRange(long shopId, long roomId, String startDate, String endDate) throws Exception {
+        long startDateMills = DateUtil.parseDateToLongValue(startDate) ;
+        long endDateMills = DateUtil.parseDateToLongValue(endDate) ;
+        List<RoomBookVo>  roomBookVos =  getRoomBookInfoDuringDateRange(shopId,roomId,startDateMills,endDateMills);
+        //记录最大可以预定的房间数（部分房间可能已经被预定，同一房型房间数有限）
+        int allowBookNumber = -1 ;
+        if(roomBookVos.size() >0){
+            int totalNumber = roomBookVos.get(0).getTotalRoomNumber() ;
+            for(RoomBookVo roomBookVo : roomBookVos){
+                int bookNumber = roomBookVo.getBookRoomNumber() ;
+                int tmpNumber = totalNumber - bookNumber ;
+                if(tmpNumber <= 0){
+                    return 0;
+                }else{
+                    if(allowBookNumber > tmpNumber || allowBookNumber==-1){
+                        allowBookNumber = tmpNumber ;
+                    }
+                }
+            }
+
+        }else{
+            //如果allowBookNumber 为-1 表没有预订的记录着是一种异常的情况，因为有个定时任务会把每天的空的预订数据插入es和数据库中
+            //对于这种情况去查 shop_room的基础表，获得房间的数量，如果基础表中没有数据 则表示这个房间不存在了 这种情况应该使用策略避免
+            String id = shopId+"_"+roomId ;
+            Map<String,Object> result = elasticSearchClient.getEntityById(ESIndexAndTypeConstant.SHOP_ROOM_INDEX,ESIndexAndTypeConstant.SHOP_ROOM_TYPE,id);
+            if(result != null){
+                allowBookNumber = (Integer) result.get("roomNumber") ;
+            }
+        }
+
+        return allowBookNumber;
+    }
+
     //获取一段时间内住的总价格
     @Override
-    public double getRoomTotalPriceDuringDateRange( long shopId,long roomId,long startDate,long endDate) {
+    public double getRoomTotalPriceDuringDateRange( long shopId,long roomId,long startDate,long endDate)  throws RedisException{
 
         String roomPriceKey = roomPriceKeyPrefix + shopId + "_" + roomId;
         //如果没有设置具体房间的价格 直接返回
@@ -264,7 +308,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
                 List<CourseBookVo> courseBookVos = elasticSearchClient.queryDataFromEsWithoutPaging(boolQueryBuilder,null,"shop_course_book","book", CourseBookVo.class);
 
                 if(courseBookVos.size() > 0){
-                    int num  = courseBookVos.get(0).getNumber() ;
+                    int num  = courseBookVos.get(0).getBookedNumber() ;
                     //获得剩余的最大可预定的数量
                     if(courseNum - num <=0){
                         courseVo.setAllowBookNumber(0) ;
@@ -675,7 +719,7 @@ public class ShopInfoServiceImpl implements ShopInfoService{
      * @throws Exception
      */
     @Override
-    public double getTravelPrice(String key, long dateTime) throws Exception {
+    public double getTravelPrice(String key, long dateTime) throws RedisException {
 
         String dateStr =  DateUtil.formatDate(dateTime);
         Map<String,String> travelPrices = redisClient.getAllHashValue(key) ;

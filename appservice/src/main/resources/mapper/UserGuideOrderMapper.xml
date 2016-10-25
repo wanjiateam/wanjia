@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.UserGuideOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserGuideOrder" >
+    <constructor >
+      <idArg column="orderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="pOrderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="shopid" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="price" jdbcType="DOUBLE" javaType="java.lang.Double" />
+      <arg column="createDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="startDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="endDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="isRemark" jdbcType="TINYINT" javaType="java.lang.Byte" />
+      <arg column="isComment" jdbcType="BIT" javaType="java.lang.Boolean" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    orderId, pOrderId, shopid, price, createDate, startDate, endDate, isRemark, isComment
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_travel_guide_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from wj_user_order_travel_guide_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserGuideOrder" >
+    insert into wj_user_order_travel_guide_info (orderId, pOrderId, shopid, 
+      price, createDate, startDate, 
+      endDate, isRemark, isComment
+      )
+    values (#{orderId,jdbcType=VARCHAR}, #{pOrderId,jdbcType=VARCHAR}, #{shopid,jdbcType=BIGINT}, 
+      #{price,jdbcType=DOUBLE}, #{createDate,jdbcType=DATE}, #{startDate,jdbcType=DATE}, 
+      #{endDate,jdbcType=DATE}, #{isRemark,jdbcType=TINYINT}, #{isComment,jdbcType=BIT}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserGuideOrder" >
+    insert into wj_user_order_travel_guide_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        orderId,
+      </if>
+      <if test="pOrderId != null" >
+        pOrderId,
+      </if>
+      <if test="shopid != null" >
+        shopid,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="createDate != null" >
+        createDate,
+      </if>
+      <if test="startDate != null" >
+        startDate,
+      </if>
+      <if test="endDate != null" >
+        endDate,
+      </if>
+      <if test="isRemark != null" >
+        isRemark,
+      </if>
+      <if test="isComment != null" >
+        isComment,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="pOrderId != null" >
+        #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopid != null" >
+        #{shopid,jdbcType=BIGINT},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=DATE},
+      </if>
+      <if test="startDate != null" >
+        #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null" >
+        #{endDate,jdbcType=DATE},
+      </if>
+      <if test="isRemark != null" >
+        #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="isComment != null" >
+        #{isComment,jdbcType=BIT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserGuideOrder" >
+    update wj_user_order_travel_guide_info
+    <set >
+      <if test="pOrderId != null" >
+        pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopid != null" >
+        shopid = #{shopid,jdbcType=BIGINT},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        createDate = #{createDate,jdbcType=DATE},
+      </if>
+      <if test="startDate != null" >
+        startDate = #{startDate,jdbcType=DATE},
+      </if>
+      <if test="endDate != null" >
+        endDate = #{endDate,jdbcType=DATE},
+      </if>
+      <if test="isRemark != null" >
+        isRemark = #{isRemark,jdbcType=TINYINT},
+      </if>
+      <if test="isComment != null" >
+        isComment = #{isComment,jdbcType=BIT},
+      </if>
+    </set>
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserGuideOrder" >
+    update wj_user_order_travel_guide_info
+    set pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      shopid = #{shopid,jdbcType=BIGINT},
+      price = #{price,jdbcType=DOUBLE},
+      createDate = #{createDate,jdbcType=DATE},
+      startDate = #{startDate,jdbcType=DATE},
+      endDate = #{endDate,jdbcType=DATE},
+      isRemark = #{isRemark,jdbcType=TINYINT},
+      isComment = #{isComment,jdbcType=BIT}
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>

@@ -1,5 +1,6 @@
 package com.wanjia.controller;
 
+import com.wanjia.exceptions.RedisException;
 import com.wanjia.service.ShopListService;
 import com.wanjia.utils.JsonReturnBody;
 import com.wanjia.utils.JsonUtil;
@@ -236,11 +237,14 @@ public class ShopListController {
 
         PageResult pageResult = null ;
         sortFields.add(new SortField("defaultSort",SortOrder.DESC)) ;
-        pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
-
-
-        parsePageResult(pageResult,jsonReturnBody);
-
+        //todo inner exception  redis query exception
+        try {
+            pageResult = shopListService.getShopTravelListByResort(indexName,type,resortId,startDateNumber,endDateNumber,sortFields,pageSize,page, ShopTravelListVo.class,landmarkId,shopName) ;
+            parsePageResult(pageResult,jsonReturnBody);
+        } catch (RedisException e) {
+            //todo  exception
+            logger.error("query redis error ",e);
+        }
 
         return JsonUtil.toJsonString(jsonReturnBody);
     }

@@ -214,6 +214,7 @@
                         </resource>
                         <resource><directory>${basedir}/src/main/resources/commons</directory></resource>
                         <resource><directory>${basedir}/src/main/resources/mybatis-generator</directory></resource>
+                        <resource><directory>${basedir}/src/main/resources/spring</directory></resource>
                     </resources>
                 </build>
                 <activation>
@@ -236,6 +237,7 @@
                         </resource>
                         <resource><directory>${basedir}/src/main/resources/commons</directory></resource>
                         <resource><directory>${basedir}/src/main/resources/mybatis-generator</directory></resource>
+                        <resource><directory>${basedir}/src/main/resources/spring</directory></resource>
                     </resources>
                 </build>
             </profile>
@@ -274,7 +276,7 @@
                 <executions>
                     <execution>
                         <id>Generate MyBatis Artifacts</id>
-                        <phase>site</phase>
+                        <phase>clean</phase>
                         <goals>
                             <goal>generate</goal>
                         </goals>

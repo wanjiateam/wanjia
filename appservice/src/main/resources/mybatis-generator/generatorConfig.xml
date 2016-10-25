@@ -33,7 +33,7 @@
             <property name="forceBigDecimals" value="false"/>
         </javaTypeResolver>
 
-        <javaModelGenerator targetPackage="com.wanjia.entity" targetProject="src/main/java">
+        <javaModelGenerator targetPackage="com.wanjia.entity.order.book" targetProject="src/main/java">
             <property name="constructorBased" value="true"/>
             <property name="enableSubPackages" value="false"/>
             <property name="trimStrings" value="true"/>
@@ -49,12 +49,15 @@
         </javaClientGenerator>
 
 
-        <table tableName="wj_resource_travel_resort_info" schema="wanjia"  domainObjectName="ResortInfo" enableCountByExample="false" enableUpdateByExample="false"
+        <table tableName="wj_user_order_specialproduct_info" schema="wanjia"  domainObjectName="UserSpecialtyOrder" enableCountByExample="false" enableUpdateByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false"
                selectByExampleQueryId="false">
-
-           <!-- <generatedKey column="uid" sqlStatement="MySql" identity="true"></generatedKey>-->
+            <property name="useActualColumnNames" value="true"/>
+            <!-- <generatedKey column="uid" sqlStatement="MySql" identity="true"></generatedKey>-->
 
         </table>
+
+
+
     </context>
 </generatorConfiguration>

@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.UserOrderMealCourseMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserOrderMealCourse" >
+    <constructor >
+      <idArg column="id" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="fOrderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="courseId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="courseNumber" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="price" jdbcType="DOUBLE" javaType="java.lang.Double" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, fOrderId, courseId, courseNumber, price
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_meal_course_info
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from wj_user_order_meal_course_info
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserOrderMealCourse" >
+    insert into wj_user_order_meal_course_info (id, fOrderId, courseId, 
+      courseNumber, price)
+    values (#{fOrderId,jdbcType=VARCHAR}, #{courseId,jdbcType=BIGINT},
+      #{courseNumber,jdbcType=INTEGER}, #{price,jdbcType=DOUBLE})
+  </insert>
+
+
+  <insert id="batchInsert" parameterType="java.util.List">
+    insert into wj_user_order_meal_course_info (fOrderId, courseId,
+    courseNumber, price) values
+    <foreach collection="list" item="item" index="index"
+             separator=",">
+      (#{item.fOrderId,jdbcType=VARCHAR}, #{item.courseId,jdbcType=BIGINT},
+      #{item.courseNumber,jdbcType=INTEGER}, #{item.price,jdbcType=DOUBLE}))
+    </foreach>
+  </insert>
+
+
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserOrderMealCourse" >
+    insert into wj_user_order_meal_course_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="fOrderId != null" >
+        fOrderId,
+      </if>
+      <if test="courseId != null" >
+        courseId,
+      </if>
+      <if test="courseNumber != null" >
+        courseNumber,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="fOrderId != null" >
+        #{fOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null" >
+        #{courseId,jdbcType=BIGINT},
+      </if>
+      <if test="courseNumber != null" >
+        #{courseNumber,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DOUBLE},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserOrderMealCourse" >
+    update wj_user_order_meal_course_info
+    <set >
+      <if test="fOrderId != null" >
+        fOrderId = #{fOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="courseId != null" >
+        courseId = #{courseId,jdbcType=BIGINT},
+      </if>
+      <if test="courseNumber != null" >
+        courseNumber = #{courseNumber,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserOrderMealCourse" >
+    update wj_user_order_meal_course_info
+    set fOrderId = #{fOrderId,jdbcType=VARCHAR},
+      courseId = #{courseId,jdbcType=BIGINT},
+      courseNumber = #{courseNumber,jdbcType=INTEGER},
+      price = #{price,jdbcType=DOUBLE}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>

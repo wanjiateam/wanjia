@@ -431,6 +431,15 @@ public class RedisClient {
     }
 
 
+    @Test
+    public void ifHashKeyExist(){
+        String key = "aaaa" ;
+        String  key2 = "bbb";
+        boolean exist = jedis.hexists(key,key2);
+        System.out.println(exist);
+    }
+
+
 
 
 }

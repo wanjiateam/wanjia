@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanjia.dao.CourseBookedInfoMapper">
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.book.CourseBookedInfo">
+    <constructor>
+      <idArg column="bookId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="courseId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="shopId" javaType="java.lang.Long" jdbcType="BIGINT" />
+      <arg column="bookDate" javaType="java.util.Date" jdbcType="DATE" />
+      <arg column="bookedNumber" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="number" javaType="java.lang.Integer" jdbcType="INTEGER" />
+      <arg column="version" javaType="java.lang.Long" jdbcType="BIGINT" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List">
+    bookId, courseId, shopId, bookDate, bookedNumber, number, version
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from wj_resource_course_book_info
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from wj_resource_course_book_info
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.book.CourseBookedInfo">
+    insert into wj_resource_course_book_info (bookId, courseId, shopId, 
+      bookDate, bookedNumber, number, 
+      version)
+    values (#{bookId,jdbcType=BIGINT}, #{courseId,jdbcType=BIGINT}, #{shopId,jdbcType=BIGINT}, 
+      #{bookDate,jdbcType=DATE}, #{bookedNumber,jdbcType=INTEGER}, #{number,jdbcType=INTEGER}, 
+      #{version,jdbcType=BIGINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.book.CourseBookedInfo">
+    insert into wj_resource_course_book_info
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="bookId != null">
+        bookId,
+      </if>
+      <if test="courseId != null">
+        courseId,
+      </if>
+      <if test="shopId != null">
+        shopId,
+      </if>
+      <if test="bookDate != null">
+        bookDate,
+      </if>
+      <if test="bookedNumber != null">
+        bookedNumber,
+      </if>
+      <if test="number != null">
+        number,
+      </if>
+      <if test="version != null">
+        version,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="bookId != null">
+        #{bookId,jdbcType=BIGINT},
+      </if>
+      <if test="courseId != null">
+        #{courseId,jdbcType=BIGINT},
+      </if>
+      <if test="shopId != null">
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="bookDate != null">
+        #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="bookedNumber != null">
+        #{bookedNumber,jdbcType=INTEGER},
+      </if>
+      <if test="number != null">
+        #{number,jdbcType=INTEGER},
+      </if>
+      <if test="version != null">
+        #{version,jdbcType=BIGINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.book.CourseBookedInfo">
+    update wj_resource_course_book_info
+    <set>
+      <if test="courseId != null">
+        courseId = #{courseId,jdbcType=BIGINT},
+      </if>
+      <if test="shopId != null">
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="bookDate != null">
+        bookDate = #{bookDate,jdbcType=DATE},
+      </if>
+      <if test="bookedNumber != null">
+        bookedNumber = #{bookedNumber,jdbcType=INTEGER},
+      </if>
+      <if test="number != null">
+        number = #{number,jdbcType=INTEGER},
+      </if>
+      <if test="version != null">
+        version = #{version,jdbcType=BIGINT},
+      </if>
+    </set>
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </update>
+
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.book.CourseBookedInfo">
+    update wj_resource_course_book_info
+    set courseId = #{courseId,jdbcType=BIGINT},
+      shopId = #{shopId,jdbcType=BIGINT},
+      bookDate = #{bookDate,jdbcType=DATE},
+      bookedNumber = #{bookedNumber,jdbcType=INTEGER},
+      number = #{number,jdbcType=INTEGER},
+      version = #{version,jdbcType=BIGINT}
+    where bookId = #{bookId,jdbcType=BIGINT}
+  </update>
+
+
+
+  <select id="selectByShopIdCourseIdAndDate" resultMap="BaseResultMap" >
+    select
+    <include refid="Base_Column_List" />
+    from wj_resource_course_book_info
+    where shopId = #{shopId,jdbcType=BIGINT} AND
+    courseId = #{courseId,jdbcType=BIGINT} AND
+    bookDate = #{bookDate,jdbcType=DATE}
+  </select>
+
+
+  <update id="updateCourseBookedNumber">
+    update wj_resource_course_book_info
+    set bookedNumber = #{bookedNumber,jdbcType=BIGINT},
+    version = #{newVersion,jdbcType=BIGINT}
+    where bookId = #{bookId,jdbcType=BIGINT} AND version = #{version,jdbcType=BIGINT}
+  </update>
+
+</mapper>

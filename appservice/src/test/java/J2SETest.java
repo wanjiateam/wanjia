@@ -1,3 +1,4 @@
+import com.wanjia.exceptions.ResourceLockFailException;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.format.DateTimeFormat;
@@ -99,6 +100,16 @@ public class J2SETest {
     public void testDayOfWeek(){
         DateTime dateTime = new DateTime("2016-7-29");
         System.out.println(dateTime.getDayOfWeek());
+    }
+
+
+    public void testException(){
+
+
+
+
+
+
     }
 
 }

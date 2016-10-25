@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.wanjia.dao.UserTicketOrderMapper" >
+  <resultMap id="BaseResultMap" type="com.wanjia.entity.order.UserTicketOrder" >
+    <constructor >
+      <idArg column="orderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="pOrderId" jdbcType="VARCHAR" javaType="java.lang.String" />
+      <arg column="shopId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="ticketId" jdbcType="BIGINT" javaType="java.lang.Long" />
+      <arg column="bookNumer" jdbcType="INTEGER" javaType="java.lang.Integer" />
+      <arg column="price" jdbcType="DOUBLE" javaType="java.lang.Double" />
+      <arg column="createDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="tourDate" jdbcType="DATE" javaType="java.util.Date" />
+      <arg column="isComment" jdbcType="BIT" javaType="java.lang.Boolean" />
+      <arg column="isRemark" jdbcType="TINYINT" javaType="java.lang.Byte" />
+    </constructor>
+  </resultMap>
+  <sql id="Base_Column_List" >
+    orderId, pOrderId, shopId, ticketId, bookNumer, price, createDate, tourDate, isComment, 
+    isRemark
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from wj_user_order_travel_ticket_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from wj_user_order_travel_ticket_info
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.wanjia.entity.order.UserTicketOrder" >
+    insert into wj_user_order_travel_ticket_info (orderId, pOrderId, shopId, 
+      ticketId, bookNumer, price, 
+      createDate, tourDate, isComment, 
+      isRemark)
+    values (#{orderId,jdbcType=VARCHAR}, #{pOrderId,jdbcType=VARCHAR}, #{shopId,jdbcType=BIGINT}, 
+      #{ticketId,jdbcType=BIGINT}, #{bookNumer,jdbcType=INTEGER}, #{price,jdbcType=DOUBLE}, 
+      #{createDate,jdbcType=DATE}, #{tourDate,jdbcType=DATE}, #{isComment,jdbcType=BIT}, 
+      #{isRemark,jdbcType=TINYINT})
+  </insert>
+  <insert id="insertSelective" parameterType="com.wanjia.entity.order.UserTicketOrder" >
+    insert into wj_user_order_travel_ticket_info
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        orderId,
+      </if>
+      <if test="pOrderId != null" >
+        pOrderId,
+      </if>
+      <if test="shopId != null" >
+        shopId,
+      </if>
+      <if test="ticketId != null" >
+        ticketId,
+      </if>
+      <if test="bookNumer != null" >
+        bookNumer,
+      </if>
+      <if test="price != null" >
+        price,
+      </if>
+      <if test="createDate != null" >
+        createDate,
+      </if>
+      <if test="tourDate != null" >
+        tourDate,
+      </if>
+      <if test="isComment != null" >
+        isComment,
+      </if>
+      <if test="isRemark != null" >
+        isRemark,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="orderId != null" >
+        #{orderId,jdbcType=VARCHAR},
+      </if>
+      <if test="pOrderId != null" >
+        #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null" >
+        #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="ticketId != null" >
+        #{ticketId,jdbcType=BIGINT},
+      </if>
+      <if test="bookNumer != null" >
+        #{bookNumer,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=DATE},
+      </if>
+      <if test="tourDate != null" >
+        #{tourDate,jdbcType=DATE},
+      </if>
+      <if test="isComment != null" >
+        #{isComment,jdbcType=BIT},
+      </if>
+      <if test="isRemark != null" >
+        #{isRemark,jdbcType=TINYINT},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.wanjia.entity.order.UserTicketOrder" >
+    update wj_user_order_travel_ticket_info
+    <set >
+      <if test="pOrderId != null" >
+        pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      </if>
+      <if test="shopId != null" >
+        shopId = #{shopId,jdbcType=BIGINT},
+      </if>
+      <if test="ticketId != null" >
+        ticketId = #{ticketId,jdbcType=BIGINT},
+      </if>
+      <if test="bookNumer != null" >
+        bookNumer = #{bookNumer,jdbcType=INTEGER},
+      </if>
+      <if test="price != null" >
+        price = #{price,jdbcType=DOUBLE},
+      </if>
+      <if test="createDate != null" >
+        createDate = #{createDate,jdbcType=DATE},
+      </if>
+      <if test="tourDate != null" >
+        tourDate = #{tourDate,jdbcType=DATE},
+      </if>
+      <if test="isComment != null" >
+        isComment = #{isComment,jdbcType=BIT},
+      </if>
+      <if test="isRemark != null" >
+        isRemark = #{isRemark,jdbcType=TINYINT},
+      </if>
+    </set>
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.wanjia.entity.order.UserTicketOrder" >
+    update wj_user_order_travel_ticket_info
+    set pOrderId = #{pOrderId,jdbcType=VARCHAR},
+      shopId = #{shopId,jdbcType=BIGINT},
+      ticketId = #{ticketId,jdbcType=BIGINT},
+      bookNumer = #{bookNumer,jdbcType=INTEGER},
+      price = #{price,jdbcType=DOUBLE},
+      createDate = #{createDate,jdbcType=DATE},
+      tourDate = #{tourDate,jdbcType=DATE},
+      isComment = #{isComment,jdbcType=BIT},
+      isRemark = #{isRemark,jdbcType=TINYINT}
+    where orderId = #{orderId,jdbcType=VARCHAR}
+  </update>
+</mapper>
